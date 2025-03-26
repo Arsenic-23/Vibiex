@@ -1,65 +1,72 @@
-# bot.py - Main Bot Logic + WebSocket Connection 🕊️
+# bot.py - Main bot logic 🎧
 
-import os
-import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from utils.queue_handler import QueueManager
-from utils.api_requests import send_play_request
-from utils.download import download_audio
+from utils.queue_handler import add_to_queue, skip_song, stop_queue
+from utils.download import download_song
+from config import API_ID, API_HASH, BOT_TOKEN, MEDIA_PATH, WEBSOCKET_URL
+import websockets
+import asyncio
+import os
 
-# Bot Configuration
-API_ID = os.getenv("API_ID")
-API_HASH = os.getenv("API_HASH")
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-WEBSOCKET_URL = os.getenv("WEBSOCKET_URL")
+# Initialize the bot
+app = Client(
+    "VibieBot",
+    api_id=API_ID,
+    api_hash=API_HASH,
+    bot_token=BOT_TOKEN
+)
 
-# Initialize Bot
-app = Client("VibieBot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-queue = QueueManager()
-
-# /start Command 💅
-@app.on_message(filters.command("start"))
-async def start(_, message: Message):
-    await message.reply_text("🦋 Welcome to Vibie! Type /play to start listening together! 🎶")
-
-# /play Command 🚀
-@app.on_message(filters.command("play"))
-async def play(_, message: Message):
+# /play command 🎶
+@app.on_message(filters.command("play") & filters.group)
+async def play_song(client: Client, message: Message):
     query = " ".join(message.command[1:])
     if not query:
-        await message.reply_text("💅 Please provide a song name or link to play! 🎧")
+        await message.reply_text("🕊️ Please provide a song name or URL to play.")
         return
     
-    await message.reply_text(f"🎶 Searching for {query}... Please wait! 🕊️")
-    
-    # Download and Get File URL
-    audio_path = await download_audio(query)
+    msg = await message.reply_text(f"💅 Searching for '{query}'...")
+
+    # Download song
+    audio_path, title, duration = await download_song(query)
     if not audio_path:
-        await message.reply_text("🚫 Unable to download the requested song. Try another one!")
+        await msg.edit("🚨 Couldn't download the song. Try again later.")
         return
-    
-    # Send WebSocket Event to Mini App
-    await send_play_request(audio_path)
-    
-    # Add to Queue
-    queue.add_to_queue(query, audio_path)
-    await message.reply_text(f"🎧 Now playing: {query}!")
 
-# /skip Command 💨
-@app.on_message(filters.command("skip"))
-async def skip(_, message: Message):
-    skipped_song = queue.skip_track()
-    if skipped_song:
-        await message.reply_text(f"🚀 Skipped: {skipped_song}")
+    # Add to queue
+    add_to_queue(message.chat.id, audio_path, title, duration)
+    await msg.edit(f"🎵 Added [{title}]({audio_path}) to the queue.")
+
+    # Notify Mini App
+    await notify_miniapp(action="play", title=title, duration=duration, chat_id=message.chat.id)
+
+# /skip command ⏭️
+@app.on_message(filters.command("skip") & filters.group)
+async def skip(client: Client, message: Message):
+    if skip_song(message.chat.id):
+        await message.reply_text("⏭️ Skipped to the next song.")
+        await notify_miniapp(action="skip", chat_id=message.chat.id)
     else:
-        await message.reply_text("⚠️ No song in queue to skip!")
+        await message.reply_text("🎵 No more songs in the queue!")
 
-# /stop Command ⏹️
-@app.on_message(filters.command("stop"))
-async def stop(_, message: Message):
-    queue.clear_queue()
-    await message.reply_text("🕊️ Playback stopped and queue cleared!")
+# /stop command ⏹️
+@app.on_message(filters.command("stop") & filters.group)
+async def stop(client: Client, message: Message):
+    stop_queue(message.chat.id)
+    await message.reply_text("⏹️ Stopped the playback.")
+    await notify_miniapp(action="stop", chat_id=message.chat.id)
 
-# Start the Bot
+# Notify Mini App via WebSocket 🚀
+async def notify_miniapp(action, title=None, duration=None, chat_id=None):
+    data = {
+        "action": action,
+        "title": title,
+        "duration": duration,
+        "chat_id": chat_id
+    }
+    async with websockets.connect(WEBSOCKET_URL) as websocket:
+        await websocket.send(str(data))
+
+# Start the bot 🚀
+print("Vibie Bot is up and running! 🎧")
 app.run()
