@@ -1,0 +1,17 @@
+/* App.css 🎨 - Main App styles */
+.app {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  color: #ff4081;
+}
+
+a {
+  text-decoration: none;
+  color: #64ffda;
+}
