@@ -28,8 +28,10 @@ ul li {
   padding: 8px;
   border-bottom: 1px solid #ddd;
   cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
 
 ul li:hover {
-  background-color: #f1f1f1;
+  background-color: #ffebee;
+  font-weight: bold;
 }
