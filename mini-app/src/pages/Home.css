@@ -19,6 +19,12 @@
   border-radius: 10px;
 }
 
+/* Scrollable queue for large song lists */
+.queue-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
 /* Improve layout on small screens */
 @media (max-width: 768px) {
   .search-container,
