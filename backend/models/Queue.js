@@ -3,21 +3,30 @@ const mongoose = require('mongoose');
 const QueueSchema = new mongoose.Schema({
     roomId: {
         type: String,
-        required: true
+        required: true,
+        index: true // Improves search performance
     },
     tracks: [
         {
             title: {
                 type: String,
-                required: true
+                required: true,
+                trim: true // Removes leading/trailing spaces
             },
             url: {
                 type: String,
-                required: true
+                required: true,
+                validate: {
+                    validator: function(v) {
+                        return /^https?:\/\/.+\..+/.test(v); // Simple URL validation
+                    },
+                    message: props => `${props.value} is not a valid URL!`
+                }
             },
             duration: {
                 type: Number,
-                required: true
+                required: true,
+                min: 1 // Ensures duration is positive
             },
             addedBy: {
                 type: String,
@@ -31,17 +40,14 @@ const QueueSchema = new mongoose.Schema({
     ],
     currentTrack: {
         type: Number,
-        default: 0
+        default: 0,
+        min: 0 // Ensures it is never negative
     },
     isPlaying: {
         type: Boolean,
         default: false
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
     }
-});
+}, { timestamps: true }); // Automatically adds createdAt & updatedAt
 
 const Queue = mongoose.model('Queue', QueueSchema);
 
