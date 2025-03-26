@@ -1,6 +1,7 @@
 const WebSocket = require('ws');
 const Queue = require('../models/Queue');
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
 
 const rooms = {}; // Store active WebSocket connections by room
 
@@ -13,6 +14,11 @@ const socketServer = (server) => {
         ws.on('message', async (data) => {
             try {
                 const message = JSON.parse(data);
+
+                // Require authentication token
+                if (!message.token || !isValidToken(message.token)) {
+                    return ws.send(JSON.stringify({ error: 'Unauthorized' }));
+                }
 
                 switch (message.type) {
                     case 'play':
@@ -35,14 +41,29 @@ const socketServer = (server) => {
 
         ws.on('close', () => {
             console.log('WebSocket connection closed.');
+
             // Remove user from any tracked rooms
             Object.keys(rooms).forEach(roomId => {
                 rooms[roomId] = rooms[roomId].filter(client => client !== ws);
+                if (rooms[roomId].length === 0) {
+                    delete rooms[roomId]; // Clean up empty rooms
+                }
             });
         });
     });
 };
 
+// Function to validate JWT token
+const isValidToken = (token) => {
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return !!decoded; // Token is valid
+    } catch (err) {
+        return false; // Invalid token
+    }
+};
+
+// Handle play event
 const handlePlay = async (ws, message) => {
     const { roomId, song } = message;
     const queue = await Queue.findOne({ roomId });
@@ -54,6 +75,7 @@ const handlePlay = async (ws, message) => {
     }
 };
 
+// Handle queue update
 const handleQueueUpdate = async (ws, message) => {
     const { roomId } = message;
     const queue = await Queue.findOne({ roomId });
@@ -63,30 +85,24 @@ const handleQueueUpdate = async (ws, message) => {
     }
 };
 
+// Handle user joining a room
 const handleJoinRoom = async (ws, message) => {
-    const { roomId, userId } = message;
-    
-    // Add user to the room in memory
+    const { roomId } = message;
+
     if (!rooms[roomId]) {
         rooms[roomId] = [];
     }
+
     rooms[roomId].push(ws);
-
-    await User.findOneAndUpdate(
-        { telegramId: userId },
-        { $addToSet: { joinedRooms: { roomId } } },
-        { new: true, upsert: true }
-    );
-
-    ws.send(JSON.stringify({ type: 'joinSuccess', roomId }));
+    console.log(`User joined room ${roomId}`);
 };
 
-// Broadcast message to all clients in the room
-const broadcast = (roomId, message) => {
+// Broadcast message to all clients in a room
+const broadcast = (roomId, data) => {
     if (rooms[roomId]) {
         rooms[roomId].forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify({ roomId, ...message }));
+                client.send(JSON.stringify(data));
             }
         });
     }
