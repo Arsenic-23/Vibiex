@@ -5,8 +5,10 @@ const axios = require('axios');
 // Import playlist from external URL
 router.post('/import', async (req, res) => {
     const { playlistUrl } = req.body;
-    if (!playlistUrl) {
-        return res.status(400).json({ msg: 'Playlist URL is required' });
+
+    // Validate URL format
+    if (!playlistUrl || !/^https?:\/\/.+\..+/.test(playlistUrl)) {
+        return res.status(400).json({ msg: 'Valid Playlist URL is required' });
     }
 
     try {
@@ -19,20 +21,28 @@ router.post('/import', async (req, res) => {
         }
 
         res.json({ msg: 'Playlist imported successfully', tracks: playlistData.tracks });
+
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error while importing playlist');
+        console.error('Error fetching playlist:', err.message);
+        if (err.response) {
+            res.status(err.response.status).json({ msg: 'Error fetching playlist from external source' });
+        } else {
+            res.status(500).json({ msg: 'Server Error while importing playlist' });
+        }
     }
 });
 
-// Fetch playlist details
+// Fetch playlist details (Placeholder for future database integration)
 router.get('/:id', async (req, res) => {
     try {
         const playlistId = req.params.id;
-        // Simulate fetching from database or API
+        
+        // TODO: Replace with database lookup
         const playlist = { id: playlistId, name: 'My Playlist', tracks: [] };
+
         res.json(playlist);
     } catch (err) {
+        console.error('Error fetching playlist:', err.message);
         res.status(500).send('Server Error');
     }
 });
