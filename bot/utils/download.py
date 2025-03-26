@@ -14,7 +14,6 @@ async def download_song(song_url, song_name):
     """Downloads and stores the song locally using yt-dlp."""
     song_path = os.path.join(MEDIA_DIR, f"{song_name}.mp3")
 
-    # yt-dlp options for downloading 🎥
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": song_path,
@@ -26,22 +25,22 @@ async def download_song(song_url, song_name):
         "quiet": True
     }
 
-    loop = asyncio.get_event_loop()
     try:
+        loop = asyncio.get_running_loop()
         await loop.run_in_executor(None, lambda: yt_dlp.YoutubeDL(ydl_opts).download([song_url]))
         return song_path
     except Exception as e:
-        return {"error": f"⚠️ Failed to download song: {str(e)}"}
+        print(f"⚠️ Error downloading {song_name}: {e}")
+        return None
 
 async def delete_song(song_name):
-    """Deletes the downloaded song to clear space."""
+    """Deletes a downloaded song."""
     song_path = os.path.join(MEDIA_DIR, f"{song_name}.mp3")
-    if os.path.exists(song_path):
-        os.remove(song_path)
-        return {"success": f"✅ Deleted {song_name}."}
-    else:
-        return {"error": "⚠️ Song not found."}
-
-async def list_downloaded_songs():
-    """Lists all downloaded songs in the media directory."""
-    return [f for f in os.listdir(MEDIA_DIR) if f.endswith(".mp3")]
+    try:
+        if os.path.exists(song_path):
+            os.remove(song_path)
+            return True
+        return False
+    except Exception as e:
+        print(f"⚠️ Error deleting {song_name}: {e}")
+        return False
