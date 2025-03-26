@@ -1,35 +1,60 @@
-# queue_handler.py - Handles song queue management 🎶
+# queue_handler.py - Queue and user management 🎵
 
-from typing import Dict, List
+import asyncio
 
-# Dictionary to maintain queues per group
-queue: Dict[int, List[str]] = {}
+# Global variables to store queue and user data
+song_queue = []
+current_song = None
+user_playlists = {}
 
-def add_to_queue(chat_id: int, song_url: str):
-    """Adds a song to the queue for a group."""
-    if chat_id not in queue:
-        queue[chat_id] = []
-    queue[chat_id].append(song_url)
-    return True
+async def add_to_queue(song_name, url, user_id):
+    """Adds a song to the queue."""
+    song_data = {
+        'song_name': song_name,
+        'url': url,
+        'requested_by': user_id
+    }
+    song_queue.append(song_data)
+    return f"🎶 **{song_name}** added to the queue!"
 
-def get_queue(chat_id: int):
-    """Returns the queue for a group."""
-    return queue.get(chat_id, [])
+async def get_queue():
+    """Returns the current queue."""
+    if not song_queue:
+        return "🚫 Queue is empty."
+    queue_list = [f"🎧 {i+1}. {song['song_name']} - Requested by {song['requested_by']}" for i, song in enumerate(song_queue)]
+    return "\n".join(queue_list)
 
-def clear_queue(chat_id: int):
-    """Clears the queue for a group."""
-    if chat_id in queue:
-        queue.pop(chat_id)
-        return True
-    return False
+async def play_next_song():
+    """Moves to the next song in the queue."""
+    global current_song
+    if not song_queue:
+        current_song = None
+        return "🚫 No more songs in the queue!"
+    current_song = song_queue.pop(0)
+    return f"🎵 Now playing: **{current_song['song_name']}**"
 
-def skip_song(chat_id: int):
-    """Skips the current song in the queue."""
-    if chat_id in queue and queue[chat_id]:
-        queue[chat_id].pop(0)
-        return True
-    return False
+async def add_to_user_playlist(user_id, song_name, url):
+    """Adds a song to the user's personal playlist."""
+    if user_id not in user_playlists:
+        user_playlists[user_id] = []
+    user_playlists[user_id].append({'song_name': song_name, 'url': url})
+    return f"📝 **{song_name}** added to your playlist!"
 
-def is_queue_empty(chat_id: int):
-    """Checks if the queue is empty."""
-    return len(queue.get(chat_id, [])) == 0
+async def get_user_playlist(user_id):
+    """Returns the user's playlist."""
+    if user_id not in user_playlists or not user_playlists[user_id]:
+        return "🎧 Your playlist is empty."
+    playlist = [f"🎵 {i+1}. {song['song_name']}" for i, song in enumerate(user_playlists[user_id])]
+    return "\n".join(playlist)
+
+async def clear_queue():
+    """Clears the current queue."""
+    global song_queue
+    song_queue = []
+    return "✅ Queue cleared successfully!"
+
+async def get_current_song():
+    """Returns the currently playing song."""
+    if not current_song:
+        return "⏸️ No song is currently playing."
+    return f"🎶 Now playing: **{current_song['song_name']}**"
