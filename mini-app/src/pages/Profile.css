@@ -1,21 +1,29 @@
 /* Profile.css 👤 - Styling for profile page */
 .profile-container {
   width: 60%;
-  margin: 50px auto;
-  padding: 20px;
+  margin: 3rem auto;
+  padding: 2rem;
   background-color: #e8f0fe;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Make it responsive */
+@media (max-width: 768px) {
+  .profile-container {
+    width: 90%;
+    padding: 1.5rem;
+  }
+}
+
 .profile-container h2 {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
   color: #3b5998;
 }
 
 .profile-container p {
-  font-size: 18px;
+  font-size: 1.1rem;
   line-height: 1.6;
   color: #333;
 }
