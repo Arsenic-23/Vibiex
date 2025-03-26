@@ -1,1 +1,2 @@
-y
+websockets==10.4
+asyncio
