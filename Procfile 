@@ -1,0 +1,3 @@
+web: node backend/app.js
+bot: python3 bot/bot.py
+ws: python3 websocket/server.py
