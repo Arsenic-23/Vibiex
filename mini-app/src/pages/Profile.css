@@ -1,0 +1,21 @@
+/* Profile.css 👤 - Styling for profile page */
+.profile-container {
+  width: 60%;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #e8f0fe;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #3b5998;
+}
+
+.profile-container p {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #333;
+}
