@@ -1,5 +1,5 @@
 
-# 🎧 VibieX - Telegram Music Bot  
+# 🎧 Vibie - Telegram Music Bot arsenic~
 
 VibieX is a powerful Telegram bot that plays music in groups. It integrates YouTube downloads, song queuing, and real-time WebSocket updates for seamless playback.  
 
@@ -86,7 +86,7 @@ Example message:
 - **Step-by-step installation** ✅  
 - **Detailed command list** ✅  
 - **WebSocket API details** ✅  
-**Arsenic-23**
+  **Arsenic-23**
 
 
 
