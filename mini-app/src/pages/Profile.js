@@ -3,16 +3,21 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./Profile.css";
+import { getAuthToken } from "../utils/auth"; // Utility to get JWT token
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
 const Profile = ({ userId }) => {
-  const [profileData, setProfileData] = useState(null); // 📊 User stats
+  const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🕊️ Fetch user profile and stats on load
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get(`/api/user/${userId}`);
+        const token = getAuthToken();
+        const response = await axios.get(`${API_URL}/user/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setProfileData(response.data);
         setLoading(false);
       } catch (error) {
@@ -23,36 +28,15 @@ const Profile = ({ userId }) => {
     fetchProfile();
   }, [userId]);
 
-  if (loading) {
-    return <div className="loading">🚀 Loading profile...</div>;
-  }
-
-  if (!profileData) {
-    return <div className="error">💔 Unable to fetch profile details!</div>;
-  }
+  if (loading) return <div>Loading profile...</div>;
+  if (!profileData) return <div>Error loading profile!</div>;
 
   return (
     <div className="profile-container">
-      <h1 className="profile-title">🦋 {profileData.username}'s Profile</h1>
-
-      <div className="profile-stats">
-        <p>💿 Songs Played: <strong>{profileData.songsPlayed}</strong></p>
-        <p>⏱️ Total Play Time: <strong>{profileData.totalPlayTime} mins</strong></p>
-        <p>📚 Playlists Imported: <strong>{profileData.playlistsImported}</strong></p>
-      </div>
-
-      <div className="recent-activity">
-        <h2>💅 Recent Activity</h2>
-        {profileData.recentActivity.length > 0 ? (
-          <ul className="activity-list">
-            {profileData.recentActivity.map((activity, index) => (
-              <li key={index}>🎶 {activity}</li>
-            ))}
-          </ul>
-        ) : (
-          <p>No recent activity yet! 🕊️</p>
-        )}
-      </div>
+      <h1>{profileData.username}'s Profile</h1>
+      <p>Songs Played: {profileData.songsPlayed}</p>
+      <p>Total Play Time: {profileData.totalPlayTime} mins</p>
+      <p>Playlists Imported: {profileData.playlistsImported}</p>
     </div>
   );
 };
