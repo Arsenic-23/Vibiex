@@ -4,11 +4,15 @@ const UserSchema = new mongoose.Schema({
     telegramId: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        index: true // Improves search performance
     },
     username: {
         type: String,
-        required: true
+        required: true,
+        trim: true, // Removes leading/trailing spaces
+        minlength: 3, // Prevents very short usernames
+        maxlength: 30
     },
     joinedRooms: [
         {
@@ -25,12 +29,8 @@ const UserSchema = new mongoose.Schema({
     isAdmin: {
         type: Boolean,
         default: false
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
     }
-});
+}, { timestamps: true }); // Automatically adds createdAt & updatedAt
 
 const User = mongoose.model('User', UserSchema);
 
