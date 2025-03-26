@@ -2,18 +2,17 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 
-// Import playlist from external URL
+// Import playlist from external URL (Added timeout)
 router.post('/import', async (req, res) => {
     const { playlistUrl } = req.body;
 
-    // Validate URL format
     if (!playlistUrl || !/^https?:\/\/.+\..+/.test(playlistUrl)) {
         return res.status(400).json({ msg: 'Valid Playlist URL is required' });
     }
 
     try {
-        // Call external API to fetch playlist data
-        const response = await axios.get(playlistUrl);
+        // Fetch playlist data with a timeout
+        const response = await axios.get(playlistUrl, { timeout: 5000 });
         const playlistData = response.data;
 
         if (!playlistData || !playlistData.tracks) {
@@ -24,7 +23,9 @@ router.post('/import', async (req, res) => {
 
     } catch (err) {
         console.error('Error fetching playlist:', err.message);
-        if (err.response) {
+        if (err.code === 'ECONNABORTED') {
+            res.status(504).json({ msg: 'Request to external playlist service timed out' });
+        } else if (err.response) {
             res.status(err.response.status).json({ msg: 'Error fetching playlist from external source' });
         } else {
             res.status(500).json({ msg: 'Server Error while importing playlist' });
