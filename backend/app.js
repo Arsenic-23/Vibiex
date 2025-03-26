@@ -1,42 +1,29 @@
-// Import necessary modules
-require('dotenv').config(); // Load environment variables
 const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
 const cors = require('cors');
-const morgan = require('morgan'); // Logging middleware
+const dotenv = require('dotenv');
+const mongoose = require('mongoose');
+const socketIo = require('socket.io');
+const http = require('http');
 
-const queueRoutes = require('./api/queue');
-const userRoutes = require('./api/user');
-const playlistRoutes = require('./api/playlist');
-const connectDB = require('./models/db'); // Database connection
-const socketHandler = require('./ws/socket');
+const logger = require('./middleware/logger'); // Request Logger
+const errorHandler = require('./middleware/error'); // Global Error Handler
+const socketHandler = require('./ws/socket'); // WebSocket Logic
 
-// Validate required environment variables
-if (!process.env.PORT || !process.env.DB_URI) {
-    console.error("❌ Missing required environment variables! Exiting...");
-    process.exit(1);
-}
+dotenv.config(); // Load environment variables
 
-// Initialize app and server
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
-    cors: {
-        origin: process.env.CLIENT_URL || "http://your-frontend.com",
-        methods: ["GET", "POST"]
-    }
-});
+const io = socketIo(server, { cors: { origin: '*' } }); // Allow CORS for WebSockets
 
 // Middleware
-app.use(cors()); // Enable CORS for frontend requests
-app.use(express.json()); // Parse JSON request bodies
-app.use(morgan('dev')); // Log API requests
+app.use(cors());
+app.use(express.json());
+app.use(logger); // Logs all requests
 
 // API Routes
-app.use('/api/queue', queueRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/playlist', playlistRoutes);
+app.use('/api/playlist', require('./api/playlist'));
+app.use('/api/queue', require('./api/queue'));
+app.use('/api/user', require('./api/user'));
 
 // WebSocket Connection
 io.on('connection', (socket) => {
@@ -45,34 +32,12 @@ io.on('connection', (socket) => {
 });
 
 // Database Connection
-connectDB();
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('MongoDB Connected'))
+    .catch(err => console.error('MongoDB Connection Error:', err));
 
-// Global Error Handling Middleware
-app.use((err, req, res, next) => {
-    console.error('❌ Error:', err.stack);
-    const statusCode = err.status || 500;
-    res.status(statusCode).json({ error: err.message || "Internal Server Error" });
-});
+// Global Error Handling Middleware (must be last)
+app.use(errorHandler);
 
-// Handle unexpected crashes gracefully
-process.on('uncaughtException', (err) => {
-    console.error('❌ Uncaught Exception:', err);
-    process.exit(1);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-// Graceful Shutdown
-process.on('SIGINT', async () => {
-    console.log("🔄 Shutting down server...");
-    server.close(() => {
-        console.log("✅ Server shut down successfully.");
-        process.exit(0);
-    });
-});
-
-// Start server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
