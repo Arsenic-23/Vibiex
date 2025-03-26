@@ -1,11 +1,14 @@
 // Import necessary modules
+require('dotenv').config(); // Load environment variables
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
+const cors = require('cors');
+
 const queueRoutes = require('./api/queue');
 const userRoutes = require('./api/user');
 const playlistRoutes = require('./api/playlist');
-const connectDB = require('./models/db'); // DB connection
+const connectDB = require('./models/db'); // Database connection
 const socketHandler = require('./ws/socket');
 
 // Initialize app and server
@@ -14,7 +17,8 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 // Middleware
-app.use(express.json());
+app.use(cors()); // Enable CORS for frontend requests
+app.use(express.json()); // Parse JSON request bodies
 
 // API Routes
 app.use('/api/queue', queueRoutes);
@@ -29,6 +33,12 @@ io.on('connection', (socket) => {
 
 // Database Connection
 connectDB();
+
+// Global Error Handling Middleware
+app.use((err, req, res, next) => {
+    console.error('Error:', err.stack);
+    res.status(500).json({ error: 'Internal Server Error' });
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;
