@@ -3,20 +3,24 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./Admin.css";
+import { getAuthToken } from "../utils/auth"; // Utility for getting token
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
 const Admin = () => {
-  const [queue, setQueue] = useState([]); // 🎶 Queue of current songs
-  const [users, setUsers] = useState([]); // 🕊️ List of active users
+  const [queue, setQueue] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 🦋 Fetch queue and user data on load
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
+        const token = getAuthToken();
         const [queueResponse, usersResponse] = await Promise.all([
-          axios.get("/api/queue"),
-          axios.get("/api/user/all"),
+          axios.get(`${API_URL}/queue`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${API_URL}/user/all`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
+
         setQueue(queueResponse.data);
         setUsers(usersResponse.data);
         setLoading(false);
@@ -30,9 +34,12 @@ const Admin = () => {
 
   const removeSong = async (songId) => {
     try {
-      await axios.delete(`/api/queue/${songId}`);
+      const token = getAuthToken();
+      await axios.delete(`${API_URL}/queue/${songId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setQueue(queue.filter((song) => song.id !== songId));
-      alert("🕊️ Song removed successfully!");
+      alert("Song removed successfully!");
     } catch (error) {
       console.error("Error removing song:", error);
     }
@@ -40,53 +47,42 @@ const Admin = () => {
 
   const kickUser = async (userId) => {
     try {
-      await axios.delete(`/api/user/${userId}`);
+      const token = getAuthToken();
+      await axios.delete(`${API_URL}/user/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setUsers(users.filter((user) => user.id !== userId));
-      alert("🚀 User kicked out successfully!");
+      alert("User removed successfully!");
     } catch (error) {
-      console.error("Error kicking user:", error);
+      console.error("Error removing user:", error);
     }
   };
 
-  if (loading) {
-    return <div className="loading">🦋 Loading admin controls...</div>;
-  }
+  if (loading) return <div>Loading admin panel...</div>;
 
   return (
     <div className="admin-container">
-      <h1 className="admin-title">👑 Admin Panel</h1>
+      <h1>Admin Panel</h1>
 
-      <div className="queue-management">
-        <h2>🎶 Manage Queue</h2>
-        {queue.length > 0 ? (
-          <ul className="queue-list">
-            {queue.map((song) => (
-              <li key={song.id}>
-                {song.title} - {song.artist}
-                <button onClick={() => removeSong(song.id)}>❌ Remove</button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No songs in the queue! 🕊️</p>
-        )}
-      </div>
+      <h2>Queue Management</h2>
+      <ul>
+        {queue.map((song) => (
+          <li key={song.id}>
+            {song.title} - {song.artist}
+            <button onClick={() => removeSong(song.id)}>Remove</button>
+          </li>
+        ))}
+      </ul>
 
-      <div className="user-management">
-        <h2>💅 Manage Users</h2>
-        {users.length > 0 ? (
-          <ul className="user-list">
-            {users.map((user) => (
-              <li key={user.id}>
-                {user.username}
-                <button onClick={() => kickUser(user.id)}>🚫 Kick</button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No active users! 🕊️</p>
-        )}
-      </div>
+      <h2>Active Users</h2>
+      <ul>
+        {users.map((user) => (
+          <li key={user.id}>
+            {user.username}
+            <button onClick={() => kickUser(user.id)}>Kick</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
