@@ -3,15 +3,15 @@ const router = express.Router();
 const User = require('../models/User');
 const mongoose = require('mongoose');
 
-// Get user profile by ID
+// Get user profile by ID (Sanitized)
 router.get('/:id', async (req, res) => {
-    try {
-        // Validate MongoDB ID
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            return res.status(400).json({ msg: 'Invalid user ID' });
-        }
+    const sanitizedId = mongoose.Types.ObjectId.isValid(req.params.id) ? req.params.id : null;
+    if (!sanitizedId) {
+        return res.status(400).json({ msg: 'Invalid user ID' });
+    }
 
-        const user = await User.findById(req.params.id);
+    try {
+        const user = await User.findById(sanitizedId);
         if (!user) return res.status(404).json({ msg: 'User not found' });
 
         res.json(user);
@@ -25,7 +25,6 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
     const { telegramId, username } = req.body;
 
-    // Validate input
     if (!telegramId || typeof telegramId !== 'string') {
         return res.status(400).json({ msg: 'Valid telegramId is required' });
     }
@@ -47,14 +46,15 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Delete user by ID
+// Delete user by ID (Sanitized)
 router.delete('/:id', async (req, res) => {
-    try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            return res.status(400).json({ msg: 'Invalid user ID' });
-        }
+    const sanitizedId = mongoose.Types.ObjectId.isValid(req.params.id) ? req.params.id : null;
+    if (!sanitizedId) {
+        return res.status(400).json({ msg: 'Invalid user ID' });
+    }
 
-        await User.findByIdAndDelete(req.params.id);
+    try {
+        await User.findByIdAndDelete(sanitizedId);
         res.json({ msg: 'User deleted successfully' });
     } catch (err) {
         console.error('Error deleting user:', err.message);
