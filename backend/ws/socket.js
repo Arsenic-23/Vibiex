@@ -1,24 +1,34 @@
 const WebSocket = require('ws');
+const jwt = require('jsonwebtoken');
 const Queue = require('../models/Queue');
 const User = require('../models/User');
-const jwt = require('jsonwebtoken');
 
 const rooms = {}; // Store active WebSocket connections by room
 
 const socketServer = (server) => {
     const wss = new WebSocket.Server({ server });
 
-    wss.on('connection', (ws) => {
+    wss.on('connection', (ws, req) => {
+        // Extract token from query params
+        const token = req.url.split("token=")[1];
+        if (!token) {
+            ws.close();
+            return;
+        }
+
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            ws.user = decoded; // Attach user data to WebSocket session
+        } catch (err) {
+            ws.close();
+            return;
+        }
+
         console.log('New WebSocket connection established.');
 
         ws.on('message', async (data) => {
             try {
                 const message = JSON.parse(data);
-
-                // Require authentication token
-                if (!message.token || !isValidToken(message.token)) {
-                    return ws.send(JSON.stringify({ error: 'Unauthorized' }));
-                }
 
                 switch (message.type) {
                     case 'play':
@@ -41,29 +51,17 @@ const socketServer = (server) => {
 
         ws.on('close', () => {
             console.log('WebSocket connection closed.');
-
-            // Remove user from any tracked rooms
+            // Remove user from any tracked rooms and clean up empty rooms
             Object.keys(rooms).forEach(roomId => {
                 rooms[roomId] = rooms[roomId].filter(client => client !== ws);
                 if (rooms[roomId].length === 0) {
-                    delete rooms[roomId]; // Clean up empty rooms
+                    delete rooms[roomId];
                 }
             });
         });
     });
 };
 
-// Function to validate JWT token
-const isValidToken = (token) => {
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        return !!decoded; // Token is valid
-    } catch (err) {
-        return false; // Invalid token
-    }
-};
-
-// Handle play event
 const handlePlay = async (ws, message) => {
     const { roomId, song } = message;
     const queue = await Queue.findOne({ roomId });
@@ -75,7 +73,6 @@ const handlePlay = async (ws, message) => {
     }
 };
 
-// Handle queue update
 const handleQueueUpdate = async (ws, message) => {
     const { roomId } = message;
     const queue = await Queue.findOne({ roomId });
@@ -85,7 +82,6 @@ const handleQueueUpdate = async (ws, message) => {
     }
 };
 
-// Handle user joining a room
 const handleJoinRoom = async (ws, message) => {
     const { roomId } = message;
 
