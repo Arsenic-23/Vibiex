@@ -1,72 +1,60 @@
-# bot.py - Main bot logic 🎧
-
-from pyrogram import Client, filters
-from pyrogram.types import Message
-from utils.queue_handler import add_to_queue, skip_song, stop_queue
-from utils.download import download_song
-from config import API_ID, API_HASH, BOT_TOKEN, MEDIA_PATH, WEBSOCKET_URL
 import websockets
 import asyncio
+import json
 import os
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import CommandHandler, Application
 
-# Initialize the bot
-app = Client(
-    "VibieBot",
-    api_id=API_ID,
-    api_hash=API_HASH,
-    bot_token=BOT_TOKEN
-)
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+BACKEND_WS_URL = os.getenv("SOCKET_URL", "ws://localhost:5000")
 
-# /play command 🎶
-@app.on_message(filters.command("play") & filters.group)
-async def play_song(client: Client, message: Message):
-    query = " ".join(message.command[1:])
-    if not query:
-        await message.reply_text("🕊️ Please provide a song name or URL to play.")
-        return
-    
-    msg = await message.reply_text(f"💅 Searching for '{query}'...")
+async def send_command(action, song_name=None):
+    """ Sends a playback command to the backend WebSocket """
+    try:
+        async with websockets.connect(BACKEND_WS_URL) as ws:
+            message = {"type": "COMMAND", "action": action}
+            if song_name:
+                message["song"] = song_name
+            await ws.send(json.dumps(message))
+    except Exception as e:
+        print(f"Failed to send command to backend: {e}")
 
-    # Download song
-    audio_path, title, duration = await download_song(query)
-    if not audio_path:
-        await msg.edit("🚨 Couldn't download the song. Try again later.")
+async def handle_play_command(update, context):
+    song_name = " ".join(context.args)
+    if not song_name:
+        await update.message.reply_text("Please provide a song name.")
         return
 
-    # Add to queue
-    add_to_queue(message.chat.id, audio_path, title, duration)
-    await msg.edit(f"🎵 Added [{title}]({audio_path}) to the queue.")
+    await send_command("PLAY", song_name)
+    mini_app_link = "https://yourapp.com"  # Replace with actual mini-app URL
+    keyboard = [[InlineKeyboardButton("🎵 Join Stream", url=f"{mini_app_link}/")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # Notify Mini App
-    await notify_miniapp(action="play", title=title, duration=duration, chat_id=message.chat.id)
+    await update.message.reply_text(f"Playing: {song_name} 🎶", reply_markup=reply_markup)
 
-# /skip command ⏭️
-@app.on_message(filters.command("skip") & filters.group)
-async def skip(client: Client, message: Message):
-    if skip_song(message.chat.id):
-        await message.reply_text("⏭️ Skipped to the next song.")
-        await notify_miniapp(action="skip", chat_id=message.chat.id)
-    else:
-        await message.reply_text("🎵 No more songs in the queue!")
+async def handle_skip_command(update, context):
+    await send_command("SKIP")
+    await update.message.reply_text("Skipping to the next song ⏭")
 
-# /stop command ⏹️
-@app.on_message(filters.command("stop") & filters.group)
-async def stop(client: Client, message: Message):
-    stop_queue(message.chat.id)
-    await message.reply_text("⏹️ Stopped the playback.")
-    await notify_miniapp(action="stop", chat_id=message.chat.id)
+async def handle_end_command(update, context):
+    await send_command("END")
+    await update.message.reply_text("Playback has been stopped ❌")
 
-# Notify Mini App via WebSocket 🚀
-async def notify_miniapp(action, title=None, duration=None, chat_id=None):
-    data = {
-        "action": action,
-        "title": title,
-        "duration": duration,
-        "chat_id": chat_id
-    }
-    async with websockets.connect(WEBSOCKET_URL) as websocket:
-        await websocket.send(str(data))
+async def handle_playforce_command(update, context):
+    song_name = " ".join(context.args)
+    if not song_name:
+        await update.message.reply_text("Please provide a song name.")
+        return
 
-# Start the bot 🚀
-print("Vibie Bot is up and running! 🎧")
-app.run()
+    await send_command("PLAYFORCE", song_name)
+    await update.message.reply_text(f"Forcing playback of: {song_name} 🚀")
+
+app = Application.builder().token(BOT_TOKEN).build()
+app.add_handler(CommandHandler("play", handle_play_command))
+app.add_handler(CommandHandler("skip", handle_skip_command))
+app.add_handler(CommandHandler("end", handle_end_command))
+app.add_handler(CommandHandler("playforce", handle_playforce_command))
+
+if __name__ == "__main__":
+    print("Bot is running...")
+    app.run_polling()
