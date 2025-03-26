@@ -2,13 +2,14 @@ const WebSocket = require('ws');
 const Queue = require('../models/Queue');
 const User = require('../models/User');
 
+const rooms = {}; // Store active WebSocket connections by room
+
 const socketServer = (server) => {
     const wss = new WebSocket.Server({ server });
 
     wss.on('connection', (ws) => {
         console.log('New WebSocket connection established.');
 
-        // Handle incoming messages
         ws.on('message', async (data) => {
             try {
                 const message = JSON.parse(data);
@@ -34,6 +35,10 @@ const socketServer = (server) => {
 
         ws.on('close', () => {
             console.log('WebSocket connection closed.');
+            // Remove user from any tracked rooms
+            Object.keys(rooms).forEach(roomId => {
+                rooms[roomId] = rooms[roomId].filter(client => client !== ws);
+            });
         });
     });
 };
@@ -41,35 +46,50 @@ const socketServer = (server) => {
 const handlePlay = async (ws, message) => {
     const { roomId, song } = message;
     const queue = await Queue.findOne({ roomId });
+
     if (queue) {
-        queue.songs.push(song);
+        queue.tracks.push(song);
         await queue.save();
-        broadcast(ws, roomId, { type: 'queueUpdate', queue: queue.songs });
+        broadcast(roomId, { type: 'queueUpdate', queue: queue.tracks });
     }
 };
 
 const handleQueueUpdate = async (ws, message) => {
     const { roomId } = message;
     const queue = await Queue.findOne({ roomId });
+
     if (queue) {
-        broadcast(ws, roomId, { type: 'queueUpdate', queue: queue.songs });
+        broadcast(roomId, { type: 'queueUpdate', queue: queue.tracks });
     }
 };
 
 const handleJoinRoom = async (ws, message) => {
     const { roomId, userId } = message;
-    const user = await User.findOne({ telegramId: userId });
-    if (user) {
-        user.joinedRooms.push({ roomId });
-        await user.save();
-        ws.send(JSON.stringify({ type: 'joinSuccess', roomId }));
-    } else {
-        ws.send(JSON.stringify({ error: 'User not found' }));
+    
+    // Add user to the room in memory
+    if (!rooms[roomId]) {
+        rooms[roomId] = [];
     }
+    rooms[roomId].push(ws);
+
+    await User.findOneAndUpdate(
+        { telegramId: userId },
+        { $addToSet: { joinedRooms: { roomId } } },
+        { new: true, upsert: true }
+    );
+
+    ws.send(JSON.stringify({ type: 'joinSuccess', roomId }));
 };
 
-const broadcast = (ws, roomId, message) => {
-    ws.send(JSON.stringify({ roomId, ...message }));
+// Broadcast message to all clients in the room
+const broadcast = (roomId, message) => {
+    if (rooms[roomId]) {
+        rooms[roomId].forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({ roomId, ...message }));
+            }
+        });
+    }
 };
 
 module.exports = socketServer;
