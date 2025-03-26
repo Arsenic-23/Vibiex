@@ -1,26 +1,21 @@
-// Player.js 🎵 - Improved Music Player with error handling and sync
-
 import React, { useState, useEffect, useRef } from "react";
 import "./Player.css";
 import { playSong, skipSong, stopPlayback } from "../services/socket";
+import { getAuthToken } from "../utils/auth"; // Utility to get token
 
 const Player = ({ currentSong }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const audioRef = useRef(new Audio());
 
-  // Load and play new song when currentSong changes
   useEffect(() => {
     if (currentSong) {
       audioRef.current.src = currentSong.url;
       audioRef.current.load();
 
-      // Attempt to play the song with error handling
       audioRef.current
         .play()
-        .then(() => {
-          setIsPlaying(true);
-        })
+        .then(() => setIsPlaying(true))
         .catch((error) => {
           console.error("Playback failed:", error);
           setIsPlaying(false);
@@ -28,61 +23,47 @@ const Player = ({ currentSong }) => {
     }
   }, [currentSong]);
 
-  // 🎧 Play or Pause Song
   const togglePlayPause = () => {
+    const token = getAuthToken(); // Get authentication token
+
     if (isPlaying) {
       audioRef.current.pause();
-      stopPlayback(); // Notify server about pause
+      stopPlayback(token); // Send token with WebSocket event
     } else {
       audioRef.current
         .play()
         .then(() => {
           setIsPlaying(true);
-          playSong({ url: currentSong.url });
+          playSong({ url: currentSong.url, token }); // Send token
         })
-        .catch((error) => {
-          console.error("Error while playing song:", error);
-        });
+        .catch((error) => console.error("Error while playing song:", error));
     }
     setIsPlaying(!isPlaying);
   };
 
-  // 🔄 Update progress bar
-  const updateProgress = () => {
-    setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
-  };
-
-  // 🎶 Play song again after skipping
-  const playSongAgain = () => {
-    audioRef.current.currentTime = 0;
-    audioRef.current.play();
-    setIsPlaying(true);
-  };
-
-  // ⏩ Skip forward 10 seconds
   const skipForward = () => {
+    const token = getAuthToken();
     if (audioRef.current.duration - audioRef.current.currentTime > 10) {
       audioRef.current.currentTime += 10;
     } else {
-      skipSong(); // Notify server to skip song
-    }
-  };
-
-  // ⏪ Skip backward 10 seconds
-  const skipBackward = () => {
-    if (audioRef.current.currentTime > 10) {
-      audioRef.current.currentTime -= 10;
-    } else {
-      audioRef.current.currentTime = 0;
+      skipSong(token); // Send token for authentication
     }
   };
 
   return (
     <div className="player-container">
-      <div className="progress-bar" style={{ width: `${progress}%` }}></div>
-      <button onClick={togglePlayPause}>{isPlaying ? "Pause" : "Play"}</button>
-      <button onClick={skipBackward}>⏪</button>
-      <button onClick={skipForward}>⏩</button>
+      <h3>Now Playing</h3>
+      {currentSong ? (
+        <>
+          <p>{currentSong.title}</p>
+          <button onClick={togglePlayPause}>
+            {isPlaying ? "Pause" : "Play"}
+          </button>
+          <button onClick={skipForward}>Skip</button>
+        </>
+      ) : (
+        <p>No song selected</p>
+      )}
     </div>
   );
 };
