@@ -1,158 +1,92 @@
-# Vibiex
 
-Vibe Together is a collaborative music platform that connects a Telegram Bot and a Mini App to allow users to manage queues, play songs, and sync playback across multiple devices in real-time. It also provides an admin panel for better room management and user stats.
+# 🎧 VibieX - Telegram Music Bot  
 
----
+VibieX is a powerful Telegram bot that plays music in groups. It integrates YouTube downloads, song queuing, and real-time WebSocket updates for seamless playback.  
 
-## 📚 Project Structure
+## 🚀 Features  
+- **Play music** from YouTube via `/play` command.  
+- **Queue system** for managing multiple song requests.  
+- **Skip & stop playback** with `/skip` and `/stop`.  
+- **WebSocket integration** for real-time updates.  
 
-/vibe-together ├── /bot                        # Telegram Bot Folder │   ├── /commands               # Bot commands (play, skip, etc.) │   ├── /utils                  # Utility functions │   ├── bot.py                  # Main bot logic and WebSocket connection │   ├── config.py               # Bot configuration (API keys, tokens, etc.) │   └── requirements.txt        # Bot dependencies (pyrogram, aiohttp, etc.) ├── /mini-app                   # Mini App Folder (React/Flutter) │   ├── /public │   ├── /src │   └── package.json ├── /backend                    # Backend APIs (Node.js/FastAPI) │   ├── /api │   ├── /models │   ├── /ws │   ├── app.js │   └── package.json ├── /websocket                  # WebSocket Server │   ├── /handlers │   ├── server.py │   └── requirements.txt ├── /docs                       # Documentation and setup │   └── API.md                  # API endpoints documentation └── README.md                   # Project overview and setup instructions
+## 📂 Project Structure
 
----
-
-## 🎯 Key Features
-- 📡 **Real-Time Sync:** WebSocket integration for instant queue updates.
-- 🎵 **Queue Management:** Add, skip, or stop songs in real time.
-- 🎮 **Mini App Interface:** A sleek UI for music control and user stats.
-- 🤖 **Telegram Bot:** Control playback remotely through simple commands.
-- 👑 **Admin Panel:** Manage users, control rooms, and view queue history.
+VibieX/ │── bot/ │   │── bot.py              # Main bot logic │   │── config.py           # Configuration settings │   │── requirements.txt    # Dependencies │   ├── utils/ │   │   ├── queue_handler.py  # Handles music queue │   │   ├── download.py       # Downloads music │── websocket/ │   │── server.py           # WebSocket server │   │── handlers/           # WebSocket event handlers │── README.md               # Project documentation
 
 ---
 
-## 📦 Setup Instructions
-### Prerequisites
-- **Backend:** Node.js (v16+), npm/yarn.
-- **Mini App:** React or Flutter with dependencies.
-- **Bot/WebSocket:** Python 3.10+.
+## 🔧 Installation  
 
----
+### 1️⃣ Clone the Repository  
+```sh
+git clone https://github.com/your-repo/VibieX.git  
+cd VibieX
 
-### 🚀 Installation
-1. **Clone the repository:**
-```bash
-git clone https://github.com/your-repo/vibe-together.git
-cd vibe-together
+2️⃣ Install Dependencies
 
-2. Backend Setup:
+pip install -r bot/requirements.txt  
+pip install -r websocket/requirements.txt
 
+3️⃣ Set Up Environment Variables
 
+Create a .env file in the bot/ directory with:
 
-cd backend
-npm install
-
-3. Mini App Setup:
-
-
-
-cd ../mini-app
-npm install
-
-4. Bot Setup:
-
-
-
-cd ../bot
-pip install -r requirements.txt
-
-5. WebSocket Setup:
-
-
-
-cd ../websocket
-pip install -r requirements.txt
+API_ID=your_api_id
+API_HASH=your_api_hash
+BOT_TOKEN=your_bot_token
+MEDIA_PATH=./media
+WEBSOCKET_URL=ws://localhost:8765
 
 
 ---
 
-⚡ Running Services
+▶️ Running the Bot
 
-Backend
+Start the bot:
 
-cd backend
-node app.js
+python bot/bot.py
 
-Mini App
+Start the WebSocket server:
 
-cd mini-app
-npm start
-
-Bot
-
-cd bot
-python3 bot.py
-
-WebSocket Server
-
-cd websocket
-python3 server.py
+python websocket/server.py
 
 
 ---
 
-🔗 API Endpoints
-
-GET /api/queue - Fetch current queue.
-
-POST /api/queue/add - Add a song to the queue.
-
-DELETE /api/queue/remove/:id - Remove a song from the queue.
-
-GET /api/user/:id - Get user profile and listening stats.
-
+🎮 Commands
 
 
 ---
 
-📡 WebSocket Events
+🌐 WebSocket API
 
-play_song - Triggered when a new song starts.
+Endpoint: ws://localhost:8765
 
-queue_update - Sent when queue is updated.
+Events:
 
-user_joined - Triggered when a user joins the session.
+play: Starts a song
+
+queue_update: Updates queue
 
 
 
----
+Example message:
 
-⚙️ Configuration
-
-Environment Variables (.env File)
-
-Create a .env file in the root directory with the following:
-
-BOT_TOKEN=YOUR_TELEGRAM_BOT_TOKEN
-API_URL=http://localhost:3000
-WEBSOCKET_URL=ws://localhost:8080
+{
+  "event": "play",
+  "title": "Song Name",
+  "duration": "3:45"
+}
 
 
 ---
 
-🤖 Telegram Bot Commands
-
-/play [song name] - Play a song or add to queue.
-
-/skip - Skip the current song.
-
-/stop - Stop playback.
-
+ 
+- **Organized structure** ✅  
+- **Step-by-step installation** ✅  
+- **Detailed command list** ✅  
+- **WebSocket API details** ✅  
+**Arsenic-23**
 
 
----
-
-📝 Contributing
-
-We welcome contributions! Fork the repository and make pull requests to improve the project.
-
-
----
-
-🛡️ License
-
-This project is licensed under the MIT License. See LICENSE for details.
-
----
-
-🎉 **✅ `/README.md` Ready!**  
-🔥 **Next:** Do you need deployment instructions or WebSocket details? 🚀
 
