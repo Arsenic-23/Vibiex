@@ -1,17 +1,14 @@
-/* App.css 🎨 - Main App styles */
+/* App.css 🎨 - Main App styles with responsiveness */
 .app {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 2rem;
 }
 
-h1 {
-  text-align: center;
-  color: #ff4081;
-}
-
-a {
-  text-decoration: none;
-  color: #64ffda;
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app {
+    padding: 1rem;
+  }
 }
