@@ -1,0 +1,14 @@
+/* index.css 💅 - Global styles */
+body {
+  margin: 0;
+  font-family: "Arial", sans-serif;
+  background-color: #121212;
+  color: #fff;
+}
+
+.app {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
