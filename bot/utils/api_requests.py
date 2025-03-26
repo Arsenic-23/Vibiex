@@ -1,36 +1,70 @@
-# api_requests.py - Handles API calls to backend 🌐
+# api_requests.py - Handles API calls to backend 🎯
 
-import requests
-import os
+import aiohttp
+import asyncio
+import json
 
-API_BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:5000/api')
+API_BASE_URL = "http://localhost:5000/api"  # Backend API endpoint 🌐
 
-def send_song_to_backend(song_url: str, chat_id: int):
-    """Sends song data to the backend to update the queue."""
+async def fetch_song_data(song_name):
+    """Fetches song metadata from the backend."""
+    url = f"{API_BASE_URL}/search?song_name={song_name}"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            if response.status == 200:
+                data = await response.json()
+                return data
+            else:
+                return {"error": "⚠️ Failed to retrieve song data."}
+
+async def add_song_to_backend_queue(song_name, url, user_id):
+    """Adds song details to backend queue."""
+    url = f"{API_BASE_URL}/queue/add"
     payload = {
-        "chat_id": chat_id,
-        "song_url": song_url
+        "song_name": song_name,
+        "url": url,
+        "requested_by": user_id
     }
-    response = requests.post(f"{API_BASE_URL}/queue/add", json=payload)
-    return response.json()
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=payload) as response:
+            if response.status == 200:
+                return await response.json()
+            else:
+                return {"error": "⚠️ Failed to add song to the backend queue."}
 
-def get_queue_from_backend(chat_id: int):
-    """Fetches the current queue from the backend."""
-    response = requests.get(f"{API_BASE_URL}/queue/get/{chat_id}")
-    if response.status_code == 200:
-        return response.json()
-    return []
+async def sync_queue_with_backend():
+    """Synchronizes the local queue with the backend queue."""
+    url = f"{API_BASE_URL}/queue/sync"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            if response.status == 200:
+                data = await response.json()
+                return data['queue']
+            else:
+                return {"error": "⚠️ Failed to sync queue with backend."}
 
-def clear_queue_from_backend(chat_id: int):
-    """Clears the queue using the backend API."""
-    response = requests.delete(f"{API_BASE_URL}/queue/clear/{chat_id}")
-    return response.status_code == 200
-
-def auth_user_to_backend(user_id: int, chat_id: int):
-    """Authorizes a user via backend API."""
+async def update_user_profile(user_id, action, details):
+    """Updates user profile stats on the backend."""
+    url = f"{API_BASE_URL}/user/update"
     payload = {
         "user_id": user_id,
-        "chat_id": chat_id
+        "action": action,
+        "details": details
     }
-    response = requests.post(f"{API_BASE_URL}/auth/user", json=payload)
-    return response.json()
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=payload) as response:
+            if response.status == 200:
+                return await response.json()
+            else:
+                return {"error": "⚠️ Failed to update user profile."}
+
+async def fetch_user_profile(user_id):
+    """Fetches user profile stats."""
+    url = f"{API_BASE_URL}/user/{user_id}"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            if response.status == 200:
+                data = await response.json()
+                return data
+            else:
+                return {"error": "⚠️ Failed to retrieve user profile."}
