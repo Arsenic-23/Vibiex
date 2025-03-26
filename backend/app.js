@@ -12,12 +12,18 @@ const playlistRoutes = require('./api/playlist');
 const connectDB = require('./models/db'); // Database connection
 const socketHandler = require('./ws/socket');
 
+// Validate required environment variables
+if (!process.env.PORT || !process.env.DB_URI) {
+    console.error("❌ Missing required environment variables! Exiting...");
+    process.exit(1);
+}
+
 // Initialize app and server
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "*",
+        origin: process.env.CLIENT_URL || "http://your-frontend.com",
         methods: ["GET", "POST"]
     }
 });
@@ -43,17 +49,28 @@ connectDB();
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
-    console.error('Error:', err.stack);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('❌ Error:', err.stack);
+    const statusCode = err.status || 500;
+    res.status(statusCode).json({ error: err.message || "Internal Server Error" });
 });
 
-// Handle unexpected crashes
+// Handle unexpected crashes gracefully
 process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
+    console.error('❌ Uncaught Exception:', err);
+    process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+// Graceful Shutdown
+process.on('SIGINT', async () => {
+    console.log("🔄 Shutting down server...");
+    server.close(() => {
+        console.log("✅ Server shut down successfully.");
+        process.exit(0);
+    });
 });
 
 // Start server
