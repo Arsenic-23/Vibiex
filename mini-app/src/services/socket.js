@@ -1,71 +1,82 @@
-// socket.js 🎧 - Handles WebSocket connection for real-time sync 🚀
+// socket.js 🎧 - Improved WebSocket handler with error fallback 🚀
 
 import { io } from "socket.io-client";
 
-// 🌐 WebSocket URL (Default to localhost for development)
-const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || "http://localhost:5000";
+// 🌐 WebSocket URL - Switch between localhost and production
+const SOCKET_URL =
+  process.env.REACT_APP_SOCKET_URL ||
+  (process.env.NODE_ENV === "production"
+    ? "https://your-production-url.com"
+    : "http://localhost:5000");
 
-// 🔗 Establish WebSocket connection
-const socket = io(SOCKET_URL, {
-  reconnectionAttempts: 5,
-  transports: ["websocket"],
-});
+// 🔗 Establish WebSocket connection with error handling
+let socket;
+
+const connectSocket = () => {
+  socket = io(SOCKET_URL, {
+    reconnectionAttempts: 5,
+    transports: ["websocket"],
+  });
+
+  socket.on("connect_error", (error) => {
+    console.error("WebSocket Connection Error:", error);
+    setTimeout(connectSocket, 3000); // Retry after 3 seconds
+  });
+
+  socket.on("disconnect", () => {
+    console.warn("WebSocket disconnected, attempting to reconnect...");
+    setTimeout(connectSocket, 3000); // Reconnect after 3 seconds
+  });
+};
+
+// Initial WebSocket connection
+connectSocket();
 
 // 🎶 Emit /play event to WebSocket server
 export const playSong = (songData) => {
-  socket.emit("play", songData);
+  if (socket && socket.connected) {
+    socket.emit("play", songData);
+  } else {
+    console.warn("WebSocket not connected, retrying...");
+    connectSocket();
+  }
 };
 
 // ⏭️ Emit /skip event to skip the current song
 export const skipSong = () => {
-  socket.emit("skip");
+  if (socket && socket.connected) {
+    socket.emit("skip");
+  }
 };
 
 // ⏹️ Emit /stop event to stop playback
 export const stopPlayback = () => {
-  socket.emit("stop");
+  if (socket && socket.connected) {
+    socket.emit("stop");
+  }
 };
 
 // 🎧 Listen for queue updates
 export const onQueueUpdate = (callback) => {
-  socket.on("queueUpdate", (queue) => {
-    callback(queue);
-  });
+  if (socket) {
+    socket.on("queueUpdate", (queue) => {
+      callback(queue);
+    });
+  }
 };
 
 // 🦋 Listen for playback status changes
 export const onPlaybackUpdate = (callback) => {
-  socket.on("playbackUpdate", (status) => {
-    callback(status);
-  });
+  if (socket) {
+    socket.on("playbackUpdate", (status) => {
+      callback(status);
+    });
+  }
 };
 
-// 🚀 Listen for user join/leave events
-export const onUserUpdate = (callback) => {
-  socket.on("userUpdate", (users) => {
-    callback(users);
-  });
-};
-
-// ❌ Disconnect WebSocket connection
+// ❗ Disconnect WebSocket safely
 export const disconnectSocket = () => {
-  if (socket.connected) {
+  if (socket && socket.connected) {
     socket.disconnect();
-    console.log("🔌 WebSocket disconnected");
   }
 };
-
-// 🔄 Reconnect WebSocket
-export const reconnectSocket = () => {
-  if (!socket.connected) {
-    socket.connect();
-    console.log("🔗 WebSocket reconnected");
-  }
-};
-
-// 🔥 Handle connection error
-socket.on("connect_error", (err) => {
-  console.error("❌ WebSocket connection error:", err);
-});
-
-export default socket;
