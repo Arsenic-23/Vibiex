@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Queue = require('../models/Queue');
+const authMiddleware = require('../middleware/auth'); // Authentication middleware
 
 // Get current queue for a specific room
 router.get('/:roomId', async (req, res) => {
@@ -16,11 +17,10 @@ router.get('/:roomId', async (req, res) => {
     }
 });
 
-// Add a song to the queue
-router.post('/:roomId', async (req, res) => {
+// Add a song to the queue (Authenticated)
+router.post('/:roomId', authMiddleware, async (req, res) => {
     const { title, url, addedBy } = req.body;
 
-    // Validate input
     if (!title || !url || !/^https?:\/\/.+\..+/.test(url)) {
         return res.status(400).json({ msg: 'Valid title and URL are required' });
     }
@@ -28,12 +28,10 @@ router.post('/:roomId', async (req, res) => {
     try {
         let queue = await Queue.findOne({ roomId: req.params.roomId });
 
-        // Create a queue if it doesn't exist
         if (!queue) {
             queue = new Queue({ roomId: req.params.roomId, tracks: [] });
         }
 
-        // Add the song to the queue
         queue.tracks.push({ title, url, addedBy });
         await queue.save();
 
@@ -44,8 +42,8 @@ router.post('/:roomId', async (req, res) => {
     }
 });
 
-// Remove a song from the queue
-router.delete('/:roomId/:trackIndex', async (req, res) => {
+// Remove a song from the queue (Authenticated)
+router.delete('/:roomId/:trackIndex', authMiddleware, async (req, res) => {
     try {
         const queue = await Queue.findOne({ roomId: req.params.roomId });
 
