@@ -1,47 +1,53 @@
-import React, { useState, useEffect, useContext } from "react";
-import { WebSocketContext } from "../utils/websocket";
-import { FaPlay, FaPause, FaStepForward, FaHeart, FaRandom } from "react-icons/fa";
+import React, { useContext, useState, useEffect } from "react";
+import { WebSocketContext } from "../utils/WebSocketContext"; // Ensure correct context import
+import { getCurrentSong, skipSong } from "../utils/api"; // Correct API imports
+import "../styles/player.css";
 
-function Player() {
-  const { currentSong, isPlaying, togglePlay, skipSong, likeSong, shuffleQueue } = useContext(WebSocketContext);
-  const [liked, setLiked] = useState(false);
+const Player = () => {
+    const { sendMessage, currentSong, setCurrentSong } = useContext(WebSocketContext);
+    const [isPlaying, setIsPlaying] = useState(false);
 
-  useEffect(() => {
-    setLiked(currentSong?.liked || false);
-  }, [currentSong]);
+    // Fetch the currently playing song
+    useEffect(() => {
+        const fetchCurrentSong = async () => {
+            const song = await getCurrentSong();
+            if (song) setCurrentSong(song);
+        };
 
-  const handleLike = () => {
-    likeSong(currentSong.id);
-    setLiked(!liked);
-  };
+        fetchCurrentSong();
+    }, [setCurrentSong]);
 
-  return (
-    <div className="player">
-      {currentSong ? (
-        <>
-          <div className="song-info">
-            <img src={currentSong.thumbnail} alt={currentSong.title} className="song-thumbnail" />
-            <div className="song-details">
-              <h3>{currentSong.title}</h3>
-              <p>{currentSong.artist}</p>
-            </div>
-          </div>
-          <div className="controls">
-            <FaRandom onClick={shuffleQueue} className="control-icon" />
-            <FaHeart onClick={handleLike} className={liked ? "liked" : "control-icon"} />
-            {isPlaying ? (
-              <FaPause onClick={togglePlay} className="control-icon" />
+    // Handle play/pause toggle
+    const togglePlayPause = () => {
+        setIsPlaying(!isPlaying);
+        sendMessage({ type: "TOGGLE_PLAY", isPlaying: !isPlaying });
+    };
+
+    // Handle skipping the song
+    const handleSkip = async () => {
+        await skipSong();
+        sendMessage({ type: "SKIP_SONG" });
+    };
+
+    return (
+        <div className="player-container">
+            {currentSong ? (
+                <>
+                    <img src={currentSong.thumbnail} alt={currentSong.title} className="song-thumbnail" />
+                    <h2 className="song-title">{currentSong.title}</h2>
+                    <p className="song-artist">{currentSong.artist}</p>
+                    <div className="controls">
+                        <button onClick={togglePlayPause} className="play-pause-btn">
+                            {isPlaying ? "Pause" : "Play"}
+                        </button>
+                        <button onClick={handleSkip} className="skip-btn">Skip</button>
+                    </div>
+                </>
             ) : (
-              <FaPlay onClick={togglePlay} className="control-icon" />
+                <p className="no-song">No song playing</p>
             )}
-            <FaStepForward onClick={skipSong} className="control-icon" />
-          </div>
-        </>
-      ) : (
-        <p>No song playing</p>
-      )}
-    </div>
-  );
-}
+        </div>
+    );
+};
 
 export default Player;
