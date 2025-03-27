@@ -1,70 +1,71 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import { WebSocketContext } from "../utils/WebSocketContext"; // Fixed import
 import api from "../utils/api"; // Fixed import
 import "../styles/search.css";
 
 const Search = () => {
-    const { sendMessage } = useContext(WebSocketContext);
+    const { addToQueue } = useContext(WebSocketContext); // Fixed WebSocket function
     const [query, setQuery] = useState("");
     const [results, setResults] = useState([]);
-    const [source, setSource] = useState("YouTube"); // Default source
+    const [source, setSource] = useState("YouTube"); // Added source selection
 
-    useEffect(() => {
-        if (query.trim() === "") {
+    const handleSearch = async () => {
+        if (!query.trim()) return;
+
+        try {
+            const response = await api.get(`/search?query=${query}&source=${source.toLowerCase()}`);
+            setResults(response.data.results);
+        } catch (error) {
+            console.error("Search error:", error);
             setResults([]);
-            return;
         }
+    };
 
-        const fetchResults = async () => {
-            try {
-                const response = await api.get(`/search?query=${query}&source=${source}`);
-                setResults(response.data);
-            } catch (error) {
-                console.error("Search error:", error);
-            }
-        };
-
-        fetchResults();
-    }, [query, source]);
-
-    const addToQueue = (song) => {
-        sendMessage({ type: "ADD_TO_QUEUE", song });
+    const handleAddToQueue = (song) => {
+        addToQueue(song);
     };
 
     return (
         <div className="search-container">
-            <h2 className="search-title">Search Songs</h2>
-            <input
-                type="text"
-                className="search-input"
-                placeholder="Search for a song..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-            />
-            <div className="source-selector">
-                <button className={`source-btn ${source === "YouTube" ? "active" : ""}`} onClick={() => setSource("YouTube")}>
-                    YouTube
-                </button>
-                <button className={`source-btn ${source === "Spotify" ? "active" : ""}`} onClick={() => setSource("Spotify")}>
-                    Spotify
-                </button>
+            <h2 className="search-title">Search</h2>
+            <div className="search-bar">
+                <input
+                    type="text"
+                    placeholder="Search for songs..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="search-input"
+                />
+                <button onClick={handleSearch} className="search-button">Search</button>
             </div>
-            {results.length > 0 ? (
-                <ul className="search-results">
-                    {results.map((song, index) => (
-                        <li key={index} className="search-item">
-                            <img src={song.thumbnail} alt={song.title} className="search-thumbnail" />
-                            <div className="search-details">
-                                <p className="search-song-title">{song.title}</p>
-                                <p className="search-song-artist">{song.artist}</p>
-                            </div>
-                            <button className="add-btn" onClick={() => addToQueue(song)}>Add</button>
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p className="no-results">No results found</p>
-            )}
+
+            {/* Source selection dropdown */}
+            <div className="source-selector">
+                <label>Select Source:</label>
+                <select value={source} onChange={(e) => setSource(e.target.value)}>
+                    <option value="YouTube">YouTube</option>
+                    <option value="Spotify">Spotify</option>
+                </select>
+            </div>
+
+            <div className="search-results">
+                {results.length > 0 ? (
+                    <ul className="results-list">
+                        {results.map((song, index) => (
+                            <li key={index} className="search-item">
+                                <img src={song.thumbnail} alt={song.title} className="search-thumbnail" />
+                                <div className="search-details">
+                                    <p className="search-title">{song.title}</p>
+                                    <p className="search-artist">{song.artist}</p>
+                                </div>
+                                <button className="add-button" onClick={() => handleAddToQueue(song)}>+</button>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="no-results">No results found.</p>
+                )}
+            </div>
         </div>
     );
 };
