@@ -1,1 +1,94 @@
+/* Queue UI Styling - Smooth Animations */
+.queue-container {
+  background-color: var(--background-dark);
+  border-radius: var(--border-radius);
+  padding: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 100%;
+}
 
+.queue-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--text-color-light);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.queue-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.queue-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.queue-item:hover {
+  background-color: var(--background-light);
+}
+
+.queue-item img {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--border-radius);
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.queue-info {
+  flex-grow: 1;
+}
+
+.queue-song-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text-color-light);
+}
+
+.queue-artist {
+  font-size: 14px;
+  color: var(--secondary-color);
+}
+
+.queue-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.queue-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-color-light);
+  font-size: 16px;
+  transition: var(--transition);
+}
+
+.queue-btn:hover {
+  color: var(--primary-color);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .queue-container {
+    padding: 10px;
+  }
+
+  .queue-item img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .queue-song-title {
+    font-size: 14px;
+  }
+}
