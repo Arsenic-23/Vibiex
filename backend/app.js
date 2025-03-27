@@ -10,32 +10,64 @@ const wss = new WebSocket.Server({ server });
 app.use(cors());
 app.use(express.json());
 
+let queue = []; // Queue of songs
 let currentSong = null;
-let queue = [];
-let miniAppClient = null; // Stores WebSocket connection for mini-app
+let clients = new Set(); // Store connected mini-app clients
 
-wss.on("connection", (ws, req) => {
+/**
+ * Broadcast a message to all connected mini-apps.
+ */
+function broadcast(data) {
+    clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(data));
+        }
+    });
+}
+
+wss.on("connection", (ws) => {
     console.log("[✅] WebSocket Connected!");
+    clients.add(ws);
 
     ws.on("message", (message) => {
         try {
             const data = JSON.parse(message);
             console.log("[🔄] Received Command:", data);
 
-            if (data.command === "play") {
-                currentSong = data.query;
-                if (miniAppClient) {
-                    miniAppClient.send(JSON.stringify({ action: "play", song: currentSong }));
-                }
-            } else if (data.command === "pause" && miniAppClient) {
-                miniAppClient.send(JSON.stringify({ action: "pause" }));
-            } else if (data.command === "resume" && miniAppClient) {
-                miniAppClient.send(JSON.stringify({ action: "resume" }));
-            } else if (data.command === "skip" && miniAppClient) {
-                miniAppClient.send(JSON.stringify({ action: "skip" }));
-            } else if (data.command === "stop" && miniAppClient) {
-                miniAppClient.send(JSON.stringify({ action: "stop" }));
-                currentSong = null;
+            switch (data.command) {
+                case "play":
+                    if (data.query) {
+                        queue.push(data.query);
+                        if (!currentSong) {
+                            currentSong = queue.shift();
+                        }
+                        broadcast({ action: "play", song: currentSong });
+                    }
+                    break;
+
+                case "pause":
+                    broadcast({ action: "pause" });
+                    break;
+
+                case "resume":
+                    broadcast({ action: "resume" });
+                    break;
+
+                case "skip":
+                    if (queue.length > 0) {
+                        currentSong = queue.shift();
+                        broadcast({ action: "play", song: currentSong });
+                    } else {
+                        currentSong = null;
+                        broadcast({ action: "stop" });
+                    }
+                    break;
+
+                case "stop":
+                    queue = [];
+                    currentSong = null;
+                    broadcast({ action: "stop" });
+                    break;
             }
         } catch (error) {
             console.error("[❌] WebSocket Message Error:", error);
@@ -43,15 +75,9 @@ wss.on("connection", (ws, req) => {
     });
 
     ws.on("close", () => {
-        if (ws === miniAppClient) {
-            console.log("[❌] Mini-App Disconnected");
-            miniAppClient = null;
-        }
+        console.log("[❌] Mini-App Disconnected");
+        clients.delete(ws);
     });
-
-    if (!miniAppClient) {
-        miniAppClient = ws;
-    }
 });
 
 app.get("/api/current-song", (req, res) => {
