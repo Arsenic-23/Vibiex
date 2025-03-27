@@ -1,31 +1,39 @@
-import React, { useEffect, useState } from "react";
-import api from "../utils/api";
+import React, { useContext } from "react";
+import { WebSocketContext } from "../utils/websocket";
+import "../styles/favorites.css";
 
-function FavoritesPage() {
-  const [favorites, setFavorites] = useState([]);
-
-  useEffect(() => {
-    async function fetchFavorites() {
-      try {
-        const response = await api.get("/favorites");
-        setFavorites(response.data);
-      } catch (error) {
-        console.error("Error fetching favorites:", error);
-      }
-    }
-    fetchFavorites();
-  }, []);
+const Favorites = () => {
+  const { favorites, removeFavorite } = useContext(WebSocketContext);
 
   return (
-    <div className="favorites-page">
-      <h2>Favorites</h2>
-      <ul>
-        {favorites.map((song) => (
-          <li key={song.id}>{song.title} - {song.artist}</li>
-        ))}
-      </ul>
+    <div className="favorites-container">
+      <h1 className="favorites-title">Favorite Songs</h1>
+
+      {favorites.length === 0 ? (
+        <p className="no-favorites">No favorite songs yet.</p>
+      ) : (
+        <ul className="favorites-list">
+          {favorites.map((song, index) => (
+            <li key={index} className="favorite-item">
+              <div className="song-info">
+                <img src={song.thumbnail} alt={song.title} className="song-thumbnail" />
+                <div>
+                  <p className="song-title">{song.title}</p>
+                  <p className="song-artist">{song.artist}</p>
+                </div>
+              </div>
+              <button
+                className="remove-button"
+                onClick={() => removeFavorite(song.id)}
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
-}
+};
 
-export default FavoritesPage;
+export default Favorites;
