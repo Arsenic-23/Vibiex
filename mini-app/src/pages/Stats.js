@@ -1,9 +1,10 @@
+
 import React, { useContext } from "react";
 import { WebSocketContext } from "../utils/websocket";
-import "../styles/stats.css"; // ✅ Ensuring correct styling
+import "../styles/stats.css";
 
 const Stats = () => {
-  const { userStats } = useContext(WebSocketContext); // ✅ Fetching user stats from WebSocketContext
+  const { userStats } = useContext(WebSocketContext);
 
   if (!userStats) {
     return <div className="loading">Loading stats...</div>;
@@ -11,56 +12,53 @@ const Stats = () => {
 
   return (
     <div className="stats-container">
-      <h1 className="stats-title">Your Music Stats</h1>
+      <h1 className="stats-title">Your Listening Stats</h1>
 
       <div className="stats-section">
-        <h3>Total Plays</h3>
-        <p>{userStats.totalPlays}</p>
-      </div>
-
-      <div className="stats-section">
-        <h3>Total Songs Listened</h3>
-        <p>{userStats.totalSongs}</p>
-      </div>
-
-      <div className="stats-section">
-        <h3>Total Artists Listened</h3>
-        <p>{userStats.totalArtists}</p>
-      </div>
-
-      <div className="stats-section">
-        <h3>Total Hours Listened</h3>
-        <p>{userStats.totalHours} hrs</p>
+        <h3>Overall Stats</h3>
+        <p><strong>Total Plays:</strong> {userStats.totalPlays}</p>
+        <p><strong>Total Songs Listened:</strong> {userStats.totalSongs}</p>
+        <p><strong>Total Artists Listened:</strong> {userStats.totalArtists}</p>
+        <p><strong>Total Hours Listened:</strong> {userStats.totalHours}</p>
       </div>
 
       <div className="stats-section">
         <h3>Top Songs</h3>
-        <ul>
-          {userStats.topSongs.length > 0 ? (
-            userStats.topSongs.map((song, index) => (
-              <li key={index}>
-                {song.title} - {song.artist} ({song.playCount} plays)
+        {userStats.topSongs.length > 0 ? (
+          <ul className="stats-list">
+            {userStats.topSongs.map((song, index) => (
+              <li key={index} className="stats-list-item">
+                <img src={song.thumbnail} alt={song.title} className="song-thumbnail" />
+                <div className="song-info">
+                  <p className="song-title">{song.title}</p>
+                  <p className="song-artist">{song.artist}</p>
+                  <p className="song-plays"><strong>Plays:</strong> {song.plays}</p>
+                </div>
               </li>
-            ))
-          ) : (
-            <p>No data available.</p>
-          )}
-        </ul>
+            ))}
+          </ul>
+        ) : (
+          <p>No top songs yet.</p>
+        )}
       </div>
 
       <div className="stats-section">
         <h3>Top Artists</h3>
-        <ul>
-          {userStats.topArtists.length > 0 ? (
-            userStats.topArtists.map((artist, index) => (
-              <li key={index}>
-                {artist.name} ({artist.playCount} plays)
+        {userStats.topArtists.length > 0 ? (
+          <ul className="stats-list">
+            {userStats.topArtists.map((artist, index) => (
+              <li key={index} className="stats-list-item">
+                <img src={artist.image} alt={artist.name} className="artist-thumbnail" />
+                <div className="artist-info">
+                  <p className="artist-name">{artist.name}</p>
+                  <p className="artist-plays"><strong>Plays:</strong> {artist.plays}</p>
+                </div>
               </li>
-            ))
-          ) : (
-            <p>No data available.</p>
-          )}
-        </ul>
+            ))}
+          </ul>
+        ) : (
+          <p>No top artists yet.</p>
+        )}
       </div>
     </div>
   );
