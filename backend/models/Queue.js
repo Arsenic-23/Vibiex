@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 
 const QueueSchema = new mongoose.Schema({
@@ -28,6 +27,16 @@ const QueueSchema = new mongoose.Schema({
                 type: Number, 
                 required: true, 
                 min: 1 // Ensures duration is positive
+            },
+            thumbnail: { 
+                type: String, 
+                required: false, // Not mandatory but recommended
+                validate: {
+                    validator: function(v) {
+                        return !v || /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(v); // Validates image URLs
+                    },
+                    message: props => `${props.value} is not a valid image URL!`
+                }
             },
             addedBy: { 
                 type: String, 
