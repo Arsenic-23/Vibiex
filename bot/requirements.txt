@@ -1,9 +1,0 @@
-# Bot dependencies 🎵
-pyrogram==2.0.30
-tgcrypto
-yt-dlp
-python-dotenv
-aiohttp
-aiofiles
-websockets
-requests
