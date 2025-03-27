@@ -1,21 +1,19 @@
 import React, { useContext } from "react";
+import { WebSocketContext } from "../utils/websocket";
 import Player from "../components/Player";
 import Queue from "../components/Queue";
-import { WebSocketContext } from "../utils/websocket";
+import "../styles/home.css"; // ✅ Ensure correct styling is applied
 
-function Home() {
-  const { participants } = useContext(WebSocketContext);
+const Home = () => {
+  const { currentSong, isPlaying } = useContext(WebSocketContext);
 
   return (
-    <div className="home-page">
-      <header>
-        <h1>VIBIEX</h1>
-        <span className="participants">Listeners: {participants}</span>
-      </header>
+    <div className="home-container">
+      <h1 className="vibiex-title">VIBIEX</h1> {/* ✅ Ensuring the bold and stylish title */}
       <Player />
       <Queue />
     </div>
   );
-}
+};
 
 export default Home;
