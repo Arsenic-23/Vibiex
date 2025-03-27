@@ -1,54 +1,52 @@
-const mongoose = require('mongoose');
+const Queue = require("../models/Queue");
 
-const QueueSchema = new mongoose.Schema({
-    roomId: {
-        type: String,
-        required: true,
-        index: true // Improves search performance
-    },
-    tracks: [
-        {
-            title: {
-                type: String,
-                required: true,
-                trim: true // Removes leading/trailing spaces
-            },
-            url: {
-                type: String,
-                required: true,
-                validate: {
-                    validator: function(v) {
-                        return /^https?:\/\/.+\..+/.test(v); // Simple URL validation
-                    },
-                    message: props => `${props.value} is not a valid URL!`
-                }
-            },
-            duration: {
-                type: Number,
-                required: true,
-                min: 1 // Ensures duration is positive
-            },
-            addedBy: {
-                type: String,
-                required: true
-            },
-            addedAt: {
-                type: Date,
-                default: Date.now
-            }
-        }
-    ],
-    currentTrack: {
-        type: Number,
-        default: 0,
-        min: 0 // Ensures it is never negative
-    },
-    isPlaying: {
-        type: Boolean,
-        default: false
+/**
+ * Adds a song to the queue for a specific room.
+ */
+async function addToQueue(roomId, song) {
+    let queue = await Queue.findOne({ roomId });
+
+    if (!queue) {
+        queue = new Queue({ roomId, tracks: [song] });
+    } else {
+        queue.tracks.push(song);
     }
-}, { timestamps: true }); // Automatically adds createdAt & updatedAt
 
-const Queue = mongoose.model('Queue', QueueSchema);
+    await queue.save();
+    return queue;
+}
 
-module.exports = Queue;
+/**
+ * Removes the currently playing song and moves to the next.
+ */
+async function removeFromQueue(roomId) {
+    let queue = await Queue.findOne({ roomId });
+
+    if (!queue || queue.tracks.length === 0) return null;
+
+    queue.tracks.shift(); // Remove the first track
+    queue.currentTrack = 0;
+    
+    await queue.save();
+    return queue;
+}
+
+/**
+ * Fetches the current queue for a room.
+ */
+async function getQueue(roomId) {
+    const queue = await Queue.findOne({ roomId });
+    return queue ? queue.tracks : [];
+}
+
+/**
+ * Gets the current song playing.
+ */
+async function getCurrentTrack(roomId) {
+    const queue = await Queue.findOne({ roomId });
+    if (!queue || queue.tracks.length === 0) return null;
+
+    return queue.tracks[queue.currentTrack];
+}
+
+module.exports = { addToQueue, removeFromQueue, getQueue, getCurrentTrack };
