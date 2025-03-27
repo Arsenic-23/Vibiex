@@ -1,4 +1,4 @@
-const BACKEND_WS_URL = process.env.REACT_APP_WS_URL || "ws://localhost:5000";
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+const API_URL = "http://localhost:5000/api";  // Change this to deployed backend URL
+const BACKEND_WS_URL = "ws://localhost:5000";  // Change this to deployed WebSocket URL
 
-export { BACKEND_WS_URL, API_URL };
+export { API_URL, BACKEND_WS_URL };
