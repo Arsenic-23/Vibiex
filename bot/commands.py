@@ -1,34 +1,92 @@
-import json
+import asyncio
+import logging
+from websocket_client import send_websocket_message
 
-async def handle_command(data):
-    """
-    Process bot commands and return appropriate responses.
+# Configure Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("VibiexBot")
+
+# Command Handler Functions
+async def play_command(song_name, user):
+    """Handles the play command."""
+    if not song_name:
+        return "❌ Please provide a song name or URL!"
     
-    Commands handled:
-    - play [song]
-    - skip
-    - queue
-    - force play [song]
-    - end
-    """
-    command_type = data.get("command")
-    user = data.get("user", "Unknown User")
-    song = data.get("song", "")
+    logger.info(f"User {user} requested to play: {song_name}")
+    
+    # Send request to WebSocket
+    response = await send_websocket_message({
+        "action": "play",
+        "song": song_name,
+        "user": user
+    })
+    
+    return response or f"🎵 Now playing: {song_name}"
 
-    if command_type == "play":
-        return {"type": "play", "message": f"{user} played: {song}"}
+async def skip_command(user):
+    """Handles the skip command."""
+    logger.info(f"User {user} requested to skip the current song.")
+    
+    response = await send_websocket_message({
+        "action": "skip",
+        "user": user
+    })
+    
+    return response or "⏭ Song skipped!"
 
-    elif command_type == "skip":
-        return {"type": "skip", "message": f"{user} skipped the current song."}
+async def queue_command():
+    """Handles the queue command."""
+    logger.info("Fetching current song queue.")
 
-    elif command_type == "queue":
-        return {"type": "queue", "message": f"{user} checked the queue."}
+    response = await send_websocket_message({
+        "action": "queue"
+    })
 
-    elif command_type == "force_play":
-        return {"type": "force_play", "message": f"{user} forced play: {song}"}
-
-    elif command_type == "end":
-        return {"type": "end", "message": f"{user} ended the stream."}
-
+    if response:
+        return "🎶 Current Queue:\n" + "\n".join([f"{idx + 1}. {song}" for idx, song in enumerate(response)])
     else:
-        return {"type": "error", "message": "Invalid command received."}
+        return "🎵 The queue is empty!"
+
+async def end_command(user):
+    """Handles the end command."""
+    logger.info(f"User {user} requested to end the music session.")
+    
+    response = await send_websocket_message({
+        "action": "end",
+        "user": user
+    })
+    
+    return response or "🛑 Music session ended!"
+
+async def force_play_command(song_name, user):
+    """Handles the force play command (overrides queue)."""
+    if not song_name:
+        return "❌ Please provide a song name or URL!"
+
+    logger.info(f"User {user} requested to force play: {song_name}")
+
+    response = await send_websocket_message({
+        "action": "force_play",
+        "song": song_name,
+        "user": user
+    })
+
+    return response or f"⚡ Force-playing: {song_name}"
+
+# Command Router
+COMMANDS = {
+    "play": play_command,
+    "skip": skip_command,
+    "queue": queue_command,
+    "end": end_command,
+    "force_play": force_play_command
+}
+
+async def handle_command(command, args, user):
+    """Processes a command and executes the corresponding function."""
+    cmd_func = COMMANDS.get(command)
+    
+    if cmd_func:
+        return await cmd_func(*args, user)
+    else:
+        return "❌ Unknown command! Available: play, skip, queue, end, force_play"
