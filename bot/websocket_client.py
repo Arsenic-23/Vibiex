@@ -2,54 +2,47 @@ import asyncio
 import websockets
 import json
 import logging
+from config import WEBSOCKET_SERVER_URL
 
-# WebSocket server URL (Replace with your actual WebSocket backend URL)
-WS_SERVER_URL = "ws://localhost:5000/ws"
+# Configure Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("WebSocketClient")
 
-async def connect_to_websocket():
-    """
-    Connects to the backend WebSocket server and listens for messages.
-    """
+# WebSocket Client Connection
+async def send_websocket_message(message):
+    """Sends a JSON message to the WebSocket server and waits for a response."""
     try:
-        async with websockets.connect(WS_SERVER_URL) as websocket:
-            logging.info("Connected to WebSocket server.")
-
-            while True:
-                try:
-                    message = await websocket.recv()
-                    data = json.loads(message)
-                    logging.info(f"Received WebSocket message: {data}")
-
-                    # Process the received message (e.g., command execution)
-                    response = await handle_message(data)
-
-                    if response:
-                        await websocket.send(json.dumps(response))
-                        logging.info(f"Sent WebSocket response: {response}")
-
-                except json.JSONDecodeError:
-                    logging.error("Error decoding JSON message.")
-                except Exception as e:
-                    logging.error(f"WebSocket error: {e}")
+        async with websockets.connect(WEBSOCKET_SERVER_URL) as websocket:
+            await websocket.send(json.dumps(message))
+            response = await websocket.recv()
+            return json.loads(response)  # Parse JSON response
 
     except Exception as e:
-        logging.error(f"Failed to connect to WebSocket: {e}")
-        await asyncio.sleep(5)  # Retry connection after delay
-        await connect_to_websocket()  # Reconnect
+        logger.error(f"WebSocket error: {e}")
+        return "⚠ Connection error. Please try again later."
 
-async def handle_message(data):
-    """
-    Handles incoming WebSocket messages and processes bot commands.
-    """
-    command = data.get("command")
+# WebSocket Listener for Real-time Updates
+async def websocket_listener():
+    """Continuously listens for messages from the WebSocket server."""
+    while True:
+        try:
+            async with websockets.connect(WEBSOCKET_SERVER_URL) as websocket:
+                logger.info("Connected to WebSocket server.")
+                
+                async for message in websocket:
+                    data = json.loads(message)
+                    logger.info(f"Received WebSocket update: {data}")
+                    
+                    # Handle different WebSocket messages from backend
+                    if data.get("type") == "now_playing":
+                        logger.info(f"🎵 Now Playing: {data['song']}")
 
-    if command:
-        from commands import handle_command
-        response = await handle_command(data)
-        return response
+        except Exception as e:
+            logger.error(f"WebSocket connection lost. Reconnecting in 5 seconds... ({e})")
+            await asyncio.sleep(5)  # Reconnect after a short delay
 
-    return None
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    asyncio.run(connect_to_websocket())
+# Start the WebSocket listener in the background
+def start_websocket_listener():
+    """Starts the WebSocket listener asynchronously."""
+    loop = asyncio.get_event_loop()
+    loop.create_task(websocket_listener())
