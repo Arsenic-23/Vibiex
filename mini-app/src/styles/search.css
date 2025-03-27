@@ -1,62 +1,76 @@
-.search-container {
+.queue-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+  background: var(--card-bg);
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: var(--box-shadow);
+}
+
+.queue-title {
+  font-size: 1.5rem;
+  color: var(--text-color);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.queue-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.queue-item {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background: var(--background-color);
-  color: var(--text-color);
-}
-
-.search-bar {
-  display: flex;
-  width: 80%;
-  max-width: 600px;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background-color: var(--input-bg);
-  color: var(--text-color);
-}
-
-.search-bar input {
-  flex-grow: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  color: inherit;
-  font-size: 1rem;
-}
-
-.search-bar button {
+  justify-content: space-between;
   padding: 10px;
-  background: var(--primary-color);
-  color: white;
+  border-bottom: 1px solid var(--border-color);
+  transition: 0.3s;
+}
+
+.queue-item:hover {
+  background: var(--hover-bg);
+}
+
+.queue-thumbnail {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-right: 10px;
+}
+
+.queue-details {
+  flex-grow: 1;
+}
+
+.queue-song {
+  font-size: 1rem;
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+.queue-artist {
+  font-size: 0.9rem;
+  color: var(--secondary-text);
+}
+
+.queue-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.control-btn {
+  background: transparent;
   border: none;
-  border-radius: 6px;
+  color: var(--primary-color);
+  font-size: 1.4rem;
   cursor: pointer;
   transition: 0.3s;
 }
 
-.search-bar button:hover {
-  background: var(--primary-dark);
-}
-
-.search-results {
-  margin-top: 20px;
-  width: 80%;
-  max-width: 600px;
-  list-style: none;
-  padding: 0;
-}
-
-.search-results li {
-  padding: 10px;
-  border-bottom: 1px solid var(--border-color);
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.search-results li:hover {
-  background: var(--hover-bg);
+.control-btn:hover {
+  color: var(--accent-color);
 }
