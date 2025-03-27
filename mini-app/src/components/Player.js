@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import "../styles/Player.css"; // Ensure this file exists
+import "../styles/Player.css";
 
-const WEBSOCKET_URL = "ws://localhost:5000"; // Update if backend is hosted elsewhere
+const WEBSOCKET_URL = "ws://localhost:5000"; // Update this if deployed
 
 const Player = () => {
     const [currentSong, setCurrentSong] = useState(null);
+    const [songInput, setSongInput] = useState(""); // New input field state
     const audioRef = useRef(null);
     const socket = useRef(null);
 
@@ -12,10 +13,7 @@ const Player = () => {
         // Connect to WebSocket
         socket.current = new WebSocket(WEBSOCKET_URL);
 
-        socket.current.onopen = () => {
-            console.log("[✅] Connected to WebSocket");
-        };
-
+        socket.current.onopen = () => console.log("[✅] Connected to WebSocket");
         socket.current.onmessage = (event) => {
             const data = JSON.parse(event.data);
             console.log("[🔄] WebSocket Message:", data);
@@ -38,56 +36,39 @@ const Player = () => {
             }
         };
 
-        socket.current.onclose = () => {
-            console.log("[❌] WebSocket Disconnected");
-        };
+        socket.current.onclose = () => console.log("[❌] WebSocket Disconnected");
 
-        return () => {
-            socket.current.close();
-        };
+        return () => socket.current.close();
     }, []);
 
-    const handlePlay = () => {
-        if (audioRef.current) {
-            audioRef.current.play();
-            socket.current.send(JSON.stringify({ command: "resume" }));
+    // Function to play a song from the mini app
+    const handlePlayFromApp = () => {
+        if (songInput.trim() !== "") {
+            socket.current.send(JSON.stringify({ command: "play", query: songInput }));
+            setSongInput(""); // Clear input after sending
         }
-    };
-
-    const handlePause = () => {
-        if (audioRef.current) {
-            audioRef.current.pause();
-            socket.current.send(JSON.stringify({ command: "pause" }));
-        }
-    };
-
-    const handleSkip = () => {
-        socket.current.send(JSON.stringify({ command: "skip" }));
     };
 
     return (
         <div className="player-container">
-            {currentSong ? (
-                <>
-                    <img 
-                        src={currentSong.thumbnail || "default-thumbnail.jpg"} 
-                        alt="Song Thumbnail" 
-                        className="song-thumbnail"
-                    />
-                    <h2>🎵 Now Playing: {currentSong.title}</h2>
-                    <p>⏱️ Duration: {currentSong.duration} sec</p>
-                </>
-            ) : (
-                <h2>No song playing</h2>
-            )}
-            
-            <audio ref={audioRef} controls style={{ width: "100%" }} />
-            
-            <div className="controls">
-                <button onClick={handlePlay}>▶ Play</button>
-                <button onClick={handlePause}>⏸ Pause</button>
-                <button onClick={handleSkip}>⏭ Skip</button>
+            <h2>Mini App Music Player</h2>
+
+            <div className="input-container">
+                <input
+                    type="text"
+                    placeholder="Enter song name or URL"
+                    value={songInput}
+                    onChange={(e) => setSongInput(e.target.value)}
+                />
+                <button onClick={handlePlayFromApp}>Play</button>
             </div>
+
+            {currentSong && (
+                <div className="song-info">
+                    <p>Now Playing: {currentSong.title}</p>
+                    <audio ref={audioRef} controls />
+                </div>
+            )}
         </div>
     );
 };
