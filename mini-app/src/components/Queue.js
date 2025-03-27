@@ -1,7 +1,7 @@
 // Queue.js 🎼 - Displays queue and manages song sync
 
 import React from "react";
-import "./Queue.css";
+import "../styles/Queue.css";
 
 const Queue = ({ queue, setCurrentSong }) => {
   // 🎧 Play selected song from queue
