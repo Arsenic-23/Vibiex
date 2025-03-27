@@ -1,1 +1,102 @@
+/* Stats Page Container */
+.stats-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background: var(--background-light);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: var(--transition);
+}
 
+/* Stats Title */
+.stats-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--text-color-light);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+  text-align: center;
+}
+
+/* Stat Box */
+.stat-box {
+  padding: 15px;
+  background: var(--background-dark);
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: var(--transition);
+}
+
+.stat-box:hover {
+  background: var(--primary-color);
+  color: var(--text-color-dark);
+  transform: scale(1.05);
+}
+
+/* Stat Number */
+.stat-number {
+  font-size: 22px;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.stat-box:hover .stat-number {
+  color: var(--text-color-dark);
+}
+
+/* Top Artists & Songs */
+.top-list {
+  margin-top: 20px;
+}
+
+.top-list-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--text-color-light);
+  margin-bottom: 10px;
+}
+
+.top-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--background-dark);
+  padding: 10px;
+  border-radius: var(--border-radius);
+  margin-bottom: 8px;
+  transition: var(--transition);
+}
+
+.top-list-item:hover {
+  background: var(--primary-color);
+  color: var(--text-color-dark);
+}
+
+/* Rank */
+.rank {
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.top-list-item:hover .rank {
+  color: var(--text-color-dark);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .stats-title {
+    font-size: 20px;
+  }
+}
