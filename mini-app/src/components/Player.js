@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import io from "socket.io-client";
 
-const WEBSOCKET_URL = "ws://localhost:5000"; // Change if backend is hosted elsewhere
+const WEBSOCKET_URL = "ws://localhost:5000"; // Update if backend is hosted elsewhere
 
 const Player = () => {
     const [currentSong, setCurrentSong] = useState(null);
@@ -23,7 +22,7 @@ const Player = () => {
             if (data.action === "play") {
                 setCurrentSong(data.song);
                 if (audioRef.current) {
-                    audioRef.current.src = data.song;
+                    audioRef.current.src = data.song.url;
                     audioRef.current.play();
                 }
             } else if (data.action === "pause" && audioRef.current) {
@@ -31,7 +30,7 @@ const Player = () => {
             } else if (data.action === "resume" && audioRef.current) {
                 audioRef.current.play();
             } else if (data.action === "skip") {
-                setCurrentSong(null); // Placeholder, real queue system needed
+                setCurrentSong(null);
             } else if (data.action === "stop") {
                 setCurrentSong(null);
                 if (audioRef.current) audioRef.current.pause();
@@ -67,8 +66,22 @@ const Player = () => {
 
     return (
         <div className="player-container">
-            <h2>🎵 Now Playing: {currentSong || "No song playing"}</h2>
+            {currentSong ? (
+                <>
+                    <img 
+                        src={currentSong.thumbnail || "default-thumbnail.jpg"} 
+                        alt="Song Thumbnail" 
+                        className="song-thumbnail"
+                    />
+                    <h2>🎵 Now Playing: {currentSong.title}</h2>
+                    <p>⏱️ Duration: {currentSong.duration} sec</p>
+                </>
+            ) : (
+                <h2>No song playing</h2>
+            )}
+            
             <audio ref={audioRef} controls style={{ width: "100%" }} />
+            
             <div>
                 <button onClick={handlePlay}>▶ Play</button>
                 <button onClick={handlePause}>⏸ Pause</button>
