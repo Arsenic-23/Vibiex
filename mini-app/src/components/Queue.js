@@ -20,8 +20,14 @@ const Queue = ({ queue, setCurrentSong }) => {
               className="queue-item"
               onClick={() => handleSongClick(song)}
             >
-              <span>🎵 {song.title}</span>
-              <span className="duration">⏱️ {song.duration}</span>
+              {/* Display thumbnail if available */}
+              {song.thumbnail && (
+                <img src={song.thumbnail} alt={song.title} className="song-thumbnail" />
+              )}
+              <div className="song-info">
+                <span>🎵 {song.title}</span>
+                <span className="duration">⏱️ {song.duration}</span>
+              </div>
             </li>
           ))}
         </ul>
