@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import "../styles/Player.css"; // Ensure this file exists
 
 const WEBSOCKET_URL = "ws://localhost:5000"; // Update if backend is hosted elsewhere
 
@@ -82,7 +83,7 @@ const Player = () => {
             
             <audio ref={audioRef} controls style={{ width: "100%" }} />
             
-            <div>
+            <div className="controls">
                 <button onClick={handlePlay}>▶ Play</button>
                 <button onClick={handlePause}>⏸ Pause</button>
                 <button onClick={handleSkip}>⏭ Skip</button>
