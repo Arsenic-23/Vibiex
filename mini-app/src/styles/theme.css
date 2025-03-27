@@ -1,1 +1,116 @@
+/* Root Variables for Theme Colors */
+:root {
+  --primary-color: #1db954; /* Spotify Green */
+  --secondary-color: #b3b3b3;
+  --background-dark: #121212;
+  --background-light: #282828;
+  --text-color-light: #ffffff;
+  --text-color-dark: #000000;
+  --border-radius: 8px;
+  --transition: all 0.3s ease-in-out;
+}
 
+/* Light Mode */
+.light-mode {
+  --primary-color: #1db954;
+  --secondary-color: #333333;
+  --background-dark: #ffffff;
+  --background-light: #f5f5f5;
+  --text-color-light: #000000;
+  --text-color-dark: #ffffff;
+}
+
+/* Dark Mode */
+.dark-mode {
+  --primary-color: #1db954;
+  --secondary-color: #b3b3b3;
+  --background-dark: #121212;
+  --background-light: #282828;
+  --text-color-light: #ffffff;
+  --text-color-dark: #000000;
+}
+
+/* Global Theme Styles */
+body {
+  background: var(--background-dark);
+  color: var(--text-color-light);
+  transition: var(--transition);
+}
+
+/* Buttons */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: var(--border-radius);
+  background: var(--primary-color);
+  color: var(--text-color-dark);
+  font-weight: bold;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.theme-toggle:hover {
+  background: #17a74b;
+}
+
+/* Theme Switch */
+.theme-switch-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 25px;
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.theme-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--secondary-color);
+  transition: var(--transition);
+  border-radius: 25px;
+}
+
+.theme-slider::before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 3px;
+  background-color: var(--text-color-light);
+  transition: var(--transition);
+  border-radius: 50%;
+}
+
+input:checked + .theme-slider {
+  background-color: var(--primary-color);
+}
+
+input:checked + .theme-slider::before {
+  transform: translateX(24px);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .theme-toggle {
+    padding: 6px 12px;
+  }
+}
