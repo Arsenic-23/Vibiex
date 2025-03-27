@@ -1,43 +1,63 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const mongoose = require('mongoose');
-const socketIo = require('socket.io');
-const http = require('http');
-
-const logger = require('./middleware/logger'); // Request Logger
-const errorHandler = require('./middleware/error'); // Global Error Handler
-const socketHandler = require('./ws/socket'); // WebSocket Logic
-
-dotenv.config(); // Load environment variables
+const express = require("express");
+const http = require("http");
+const WebSocket = require("ws");
+const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, { cors: { origin: '*' } }); // Allow CORS for WebSockets
+const wss = new WebSocket.Server({ server });
 
-// Middleware
 app.use(cors());
 app.use(express.json());
-app.use(logger); // Logs all requests
 
-// API Routes
-app.use('/api/playlist', require('./api/playlist'));
-app.use('/api/queue', require('./api/queue'));
-app.use('/api/user', require('./api/user'));
+let currentSong = null;
+let queue = [];
+let miniAppClient = null; // Stores WebSocket connection for mini-app
 
-// WebSocket Connection
-io.on('connection', (socket) => {
-    console.log('New WebSocket connection');
-    socketHandler(socket, io);
+wss.on("connection", (ws, req) => {
+    console.log("[✅] WebSocket Connected!");
+
+    ws.on("message", (message) => {
+        try {
+            const data = JSON.parse(message);
+            console.log("[🔄] Received Command:", data);
+
+            if (data.command === "play") {
+                currentSong = data.query;
+                if (miniAppClient) {
+                    miniAppClient.send(JSON.stringify({ action: "play", song: currentSong }));
+                }
+            } else if (data.command === "pause" && miniAppClient) {
+                miniAppClient.send(JSON.stringify({ action: "pause" }));
+            } else if (data.command === "resume" && miniAppClient) {
+                miniAppClient.send(JSON.stringify({ action: "resume" }));
+            } else if (data.command === "skip" && miniAppClient) {
+                miniAppClient.send(JSON.stringify({ action: "skip" }));
+            } else if (data.command === "stop" && miniAppClient) {
+                miniAppClient.send(JSON.stringify({ action: "stop" }));
+                currentSong = null;
+            }
+        } catch (error) {
+            console.error("[❌] WebSocket Message Error:", error);
+        }
+    });
+
+    ws.on("close", () => {
+        if (ws === miniAppClient) {
+            console.log("[❌] Mini-App Disconnected");
+            miniAppClient = null;
+        }
+    });
+
+    if (!miniAppClient) {
+        miniAppClient = ws;
+    }
 });
 
-// Database Connection
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.error('MongoDB Connection Error:', err));
+app.get("/api/current-song", (req, res) => {
+    res.json({ song: currentSong, queue });
+});
 
-// Global Error Handling Middleware (must be last)
-app.use(errorHandler);
-
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(5000, () => {
+    console.log("[🚀] Server running on port 5000");
+});
