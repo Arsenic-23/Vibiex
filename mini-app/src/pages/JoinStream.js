@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "./JoinStream.css";
 
 const JoinStream = () => {
     const [joining, setJoining] = useState(false);
@@ -11,13 +12,13 @@ const JoinStream = () => {
     };
 
     return (
-        <div style={{ textAlign: "center", marginTop: "20px" }}>
-            <h2>🎵 Join the Music Stream</h2>
-            <p>Do you want to join the live music stream?</p>
-            <button onClick={handleJoin} disabled={joining}>
+        <div className="join-container">
+            <h2>🎵 Welcome to Vibie Music Stream</h2>
+            <p>Join now to listen to high-quality music in real-time!</p>
+            <button onClick={handleJoin} disabled={joining} className="join-btn">
                 {joining ? "Joining..." : "✅ Join Now"}
             </button>
-            <button onClick={() => navigate("/")}>❌ Cancel</button>
+            <button onClick={() => navigate("/")} className="cancel-btn">❌ Cancel</button>
         </div>
     );
 };
