@@ -1,96 +1,63 @@
-/* Music Player UI - Spotify-Like */
 .player-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: var(--background-dark);
+  background: var(--background-color);
   padding: 20px;
-  border-radius: var(--border-radius);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  min-height: 100vh;
+}
+
+.player-card {
   width: 100%;
   max-width: 500px;
-}
-
-.album-art {
-  width: 100%;
-  max-width: 250px;
-  height: 250px;
-  border-radius: var(--border-radius);
-  object-fit: cover;
-  margin-bottom: 20px;
-}
-
-.song-info {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: var(--box-shadow);
   text-align: center;
 }
 
-.song-title {
-  font-size: 20px;
-  font-weight: bold;
-  color: var(--text-color-light);
-}
-
-.song-artist {
-  font-size: 16px;
-  color: var(--secondary-color);
-  margin-top: 5px;
-}
-
-.progress-container {
-  width: 100%;
-  height: 5px;
-  background-color: var(--secondary-color);
-  border-radius: var(--border-radius);
-  margin: 15px 0;
-  position: relative;
-}
-
-.progress-bar {
-  height: 100%;
-  background-color: var(--primary-color);
-  border-radius: var(--border-radius);
-  transition: width 0.3s ease-in-out;
-}
-
-.controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
+.player-thumbnail {
   width: 100%;
   max-width: 300px;
-  margin-top: 15px;
+  height: auto;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
 }
 
 .control-btn {
-  background: none;
+  background: transparent;
   border: none;
+  color: var(--primary-color);
+  font-size: 1.8rem;
   cursor: pointer;
-  color: var(--text-color-light);
-  font-size: 20px;
-  transition: var(--transition);
+  transition: 0.3s;
 }
 
 .control-btn:hover {
-  color: var(--primary-color);
+  color: var(--accent-color);
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-  .player-container {
-    padding: 15px;
-  }
+.progress-bar {
+  width: 100%;
+  height: 5px;
+  background: var(--border-color);
+  border-radius: 5px;
+  margin-top: 10px;
+  position: relative;
+}
 
-  .album-art {
-    max-width: 200px;
-    height: 200px;
-  }
-
-  .song-title {
-    font-size: 18px;
-  }
-
-  .controls {
-    max-width: 250px;
-  }
+.progress-fill {
+  height: 100%;
+  width: 50%;
+  background: var(--primary-color);
+  border-radius: 5px;
 }
