@@ -1,17 +1,16 @@
-/* Queue UI Styling - Smooth Animations */
 .queue-container {
-  background-color: var(--background-dark);
-  border-radius: var(--border-radius);
-  padding: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  max-width: 500px;
   width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+  background: var(--card-bg);
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: var(--box-shadow);
 }
 
 .queue-title {
-  font-size: 20px;
-  font-weight: bold;
-  color: var(--text-color-light);
+  font-size: 1.5rem;
+  color: var(--text-color);
   margin-bottom: 10px;
   text-align: center;
 }
@@ -25,70 +24,53 @@
 .queue-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 10px;
-  border-radius: var(--border-radius);
-  transition: var(--transition);
-  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+  transition: 0.3s;
 }
 
 .queue-item:hover {
-  background-color: var(--background-light);
+  background: var(--hover-bg);
 }
 
-.queue-item img {
+.queue-thumbnail {
   width: 50px;
   height: 50px;
-  border-radius: var(--border-radius);
+  border-radius: 8px;
   object-fit: cover;
-  margin-right: 15px;
+  margin-right: 10px;
 }
 
-.queue-info {
+.queue-details {
   flex-grow: 1;
 }
 
-.queue-song-title {
-  font-size: 16px;
+.queue-song {
+  font-size: 1rem;
+  color: var(--text-color);
   font-weight: bold;
-  color: var(--text-color-light);
 }
 
 .queue-artist {
-  font-size: 14px;
-  color: var(--secondary-color);
+  font-size: 0.9rem;
+  color: var(--secondary-text);
 }
 
 .queue-controls {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-.queue-btn {
-  background: none;
+.control-btn {
+  background: transparent;
   border: none;
-  cursor: pointer;
-  color: var(--text-color-light);
-  font-size: 16px;
-  transition: var(--transition);
-}
-
-.queue-btn:hover {
   color: var(--primary-color);
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-  .queue-container {
-    padding: 10px;
-  }
-
-  .queue-item img {
-    width: 40px;
-    height: 40px;
-  }
-
-  .queue-song-title {
-    font-size: 14px;
-  }
+.control-btn:hover {
+  color: var(--accent-color);
 }
