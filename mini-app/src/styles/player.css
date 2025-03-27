@@ -1,1 +1,96 @@
+/* Music Player UI - Spotify-Like */
+.player-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--background-dark);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 500px;
+}
 
+.album-art {
+  width: 100%;
+  max-width: 250px;
+  height: 250px;
+  border-radius: var(--border-radius);
+  object-fit: cover;
+  margin-bottom: 20px;
+}
+
+.song-info {
+  text-align: center;
+}
+
+.song-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--text-color-light);
+}
+
+.song-artist {
+  font-size: 16px;
+  color: var(--secondary-color);
+  margin-top: 5px;
+}
+
+.progress-container {
+  width: 100%;
+  height: 5px;
+  background-color: var(--secondary-color);
+  border-radius: var(--border-radius);
+  margin: 15px 0;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius);
+  transition: width 0.3s ease-in-out;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 300px;
+  margin-top: 15px;
+}
+
+.control-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-color-light);
+  font-size: 20px;
+  transition: var(--transition);
+}
+
+.control-btn:hover {
+  color: var(--primary-color);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .player-container {
+    padding: 15px;
+  }
+
+  .album-art {
+    max-width: 200px;
+    height: 200px;
+  }
+
+  .song-title {
+    font-size: 18px;
+  }
+
+  .controls {
+    max-width: 250px;
+  }
+}
