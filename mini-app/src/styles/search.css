@@ -1,1 +1,120 @@
+/* Search Bar Styling - Modern Look */
+.search-container {
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+  margin: 20px auto;
+}
 
+.search-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--background-light);
+  font-size: 16px;
+  color: var(--text-color-light);
+  transition: var(--transition);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.search-input:focus {
+  outline: none;
+  background-color: var(--background-dark);
+}
+
+.search-icon {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  color: var(--secondary-color);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.search-filters {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  gap: 10px;
+}
+
+.filter-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--border-radius);
+  background: var(--secondary-color);
+  color: var(--text-color-light);
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.filter-btn.active {
+  background: var(--primary-color);
+  color: var(--text-color-dark);
+}
+
+.filter-btn:hover {
+  background: var(--primary-color);
+}
+
+.search-results {
+  margin-top: 20px;
+  list-style: none;
+  padding: 0;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.search-item:hover {
+  background: var(--background-light);
+}
+
+.search-item img {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--border-radius);
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.search-info {
+  flex-grow: 1;
+}
+
+.search-song-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text-color-light);
+}
+
+.search-artist {
+  font-size: 14px;
+  color: var(--secondary-color);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .search-input {
+    padding: 10px;
+  }
+
+  .filter-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .search-item img {
+    width: 40px;
+    height: 40px;
+  }
+}
