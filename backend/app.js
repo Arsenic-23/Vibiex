@@ -1,4 +1,3 @@
-
 const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
@@ -42,89 +41,33 @@ wss.on("connection", (ws) => {
     clients.add(ws);
 
     ws.on("message", async (message) => {
-        try {
-            const data = JSON.parse(message);
-            console.log("[🔄] Received Command:", data);
+        const data = JSON.parse(message);
 
-            if (!data.roomId) return; // Ensure roomId is provided
-            const queue = await getQueue(data.roomId);
+        if (data.command === "play") {
+            console.log(`[🎵] Play request received for: ${data.query}`);
 
-            switch (data.command) {
-                case "play":
-                    if (data.query) {
-                        queue.tracks.push(data.query);
-                        if (!queue.currentTrack) {
-                            queue.currentTrack = 0;
-                        }
-                        await queue.save();
-                        broadcast({ action: "play", song: queue.tracks[queue.currentTrack] });
-                    }
-                    break;
-
-                case "pause":
-                    queue.isPlaying = false;
-                    await queue.save();
-                    broadcast({ action: "pause" });
-                    break;
-
-                case "resume":
-                    queue.isPlaying = true;
-                    await queue.save();
-                    broadcast({ action: "resume" });
-                    break;
-
-                case "skip":
-                    if (queue.tracks.length > 1) {
-                        queue.tracks.shift();
-                        queue.currentTrack = 0;
-                        await queue.save();
-                        broadcast({ action: "play", song: queue.tracks[0] });
-                    } else {
-                        queue.tracks = [];
-                        queue.currentTrack = 0;
-                        queue.isPlaying = false;
-                        await queue.save();
-                        broadcast({ action: "stop" });
-                    }
-                    break;
-
-                case "stop":
-                    queue.tracks = [];
-                    queue.currentTrack = 0;
-                    queue.isPlaying = false;
-                    await queue.save();
-                    broadcast({ action: "stop" });
-                    break;
+            // Fetch song details (assuming you have a function getSongUrl)
+            const songUrl = await getSongUrl(data.query);
+            if (songUrl) {
+                const songData = { action: "play", song: { title: data.query, url: songUrl } };
+                broadcast(songData); // Broadcast to all clients
+            } else {
+                ws.send(JSON.stringify({ action: "error", message: "Song not found" }));
             }
-        } catch (error) {
-            console.error("[❌] WebSocket Message Error:", error);
         }
     });
 
     ws.on("close", () => {
-        console.log("[❌] Mini-App Disconnected");
+        console.log("[❌] WebSocket Disconnected");
         clients.delete(ws);
     });
 });
 
 /**
- * API Endpoint to Get Current Song.
+ * Dummy function to fetch a song URL.
  */
-app.get("/api/:roomId/current-song", async (req, res) => {
-    const queue = await getQueue(req.params.roomId);
-    res.json({ song: queue.tracks[queue.currentTrack] || null, queue: queue.tracks });
-});
+async function getSongUrl(query) {
+    return `https://example.com/songs/${query.replace(/\s+/g, "_")}.mp3`;
+}
 
-/**
- * MongoDB Connection.
- */
-mongoose.connect("mongodb://localhost:27017/vibie", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
-    console.log("[✅] MongoDB Connected!");
-}).catch(err => console.error("[❌] MongoDB Connection Error:", err));
-
-server.listen(5000, () => {
-    console.log("[🚀] Server running on port 5000");
-});
+server.listen(5000, () => console.log("[🚀] Server running on port 5000"));
