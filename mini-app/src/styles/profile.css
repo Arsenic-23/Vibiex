@@ -1,1 +1,149 @@
+/* Profile Container */
+.profile-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  border-radius: var(--border-radius);
+  background: var(--background-dark);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: var(--transition);
+}
 
+/* Profile Header */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--primary-color);
+}
+
+.profile-info {
+  flex-grow: 1;
+}
+
+.profile-name {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--text-color-light);
+}
+
+.profile-username {
+  font-size: 16px;
+  color: var(--secondary-color);
+}
+
+/* Stats Section */
+.profile-stats {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+  padding: 10px;
+  background: var(--background-light);
+  border-radius: var(--border-radius);
+  text-align: center;
+}
+
+.stat-item {
+  flex: 1;
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text-color-light);
+}
+
+.stat-item span {
+  display: block;
+  font-size: 14px;
+  color: var(--secondary-color);
+}
+
+/* Playlists & History */
+.profile-section {
+  margin-top: 30px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: var(--text-color-light);
+}
+
+.playlist-item,
+.history-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.playlist-item:hover,
+.history-item:hover {
+  background: var(--background-light);
+}
+
+.playlist-item img,
+.history-item img {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--border-radius);
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.playlist-info,
+.history-info {
+  flex-grow: 1;
+}
+
+.playlist-title,
+.history-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text-color-light);
+}
+
+.playlist-artist,
+.history-artist {
+  font-size: 14px;
+  color: var(--secondary-color);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .profile-container {
+    padding: 15px;
+  }
+
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .profile-name {
+    font-size: 20px;
+  }
+
+  .profile-stats {
+    flex-direction: column;
+  }
+
+  .stat-item {
+    margin-bottom: 10px;
+  }
+
+  .playlist-item img,
+  .history-item img {
+    width: 40px;
+    height: 40px;
+  }
+}
