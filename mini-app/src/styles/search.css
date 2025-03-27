@@ -1,6 +1,6 @@
-.queue-container {
+.search-container {
   width: 100%;
-  max-width: 500px;
+  max-width: 600px;
   margin: 20px auto;
   background: var(--card-bg);
   padding: 15px;
@@ -8,33 +8,57 @@
   box-shadow: var(--box-shadow);
 }
 
-.queue-title {
-  font-size: 1.5rem;
-  color: var(--text-color);
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-.queue-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.queue-item {
+.search-bar {
+  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+}
+
+.search-input {
+  flex-grow: 1;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  color: var(--text-color);
+  outline: none;
+}
+
+.search-button {
+  background: var(--primary-color);
+  border: none;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: 0.3s;
+}
+
+.search-button:hover {
+  background: var(--accent-color);
+}
+
+.search-results {
+  margin-top: 15px;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
   padding: 10px;
   border-bottom: 1px solid var(--border-color);
   transition: 0.3s;
 }
 
-.queue-item:hover {
+.search-item:hover {
   background: var(--hover-bg);
 }
 
-.queue-thumbnail {
+.search-thumbnail {
   width: 50px;
   height: 50px;
   border-radius: 8px;
@@ -42,35 +66,17 @@
   margin-right: 10px;
 }
 
-.queue-details {
+.search-details {
   flex-grow: 1;
 }
 
-.queue-song {
+.search-title {
   font-size: 1rem;
   color: var(--text-color);
   font-weight: bold;
 }
 
-.queue-artist {
+.search-artist {
   font-size: 0.9rem;
   color: var(--secondary-text);
-}
-
-.queue-controls {
-  display: flex;
-  gap: 8px;
-}
-
-.control-btn {
-  background: transparent;
-  border: none;
-  color: var(--primary-color);
-  font-size: 1.4rem;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.control-btn:hover {
-  color: var(--accent-color);
 }
