@@ -3,44 +3,42 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 const WebSocketContext = createContext(null);
 
 export const WebSocketProvider = ({ children }) => {
-  const [socket, setSocket] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
+    const [socket, setSocket] = useState(null);
+    const [isConnected, setIsConnected] = useState(false);
 
-  useEffect(() => {
-    const ws = new WebSocket("wss://your-websocket-url.com"); // ✅ Replace with actual WebSocket URL
+    useEffect(() => {
+        const ws = new WebSocket("wss://your-backend-url/ws");
 
-    ws.onopen = () => {
-      console.log("WebSocket Connected");
-      setIsConnected(true);
-    };
+        ws.onopen = () => {
+            console.log("WebSocket connected");
+            setIsConnected(true);
+        };
 
-    ws.onmessage = (event) => {
-      console.log("WebSocket Message:", event.data);
-    };
+        ws.onmessage = (event) => {
+            console.log("WebSocket message received:", event.data);
+        };
 
-    ws.onerror = (error) => {
-      console.error("WebSocket Error:", error);
-    };
+        ws.onclose = () => {
+            console.log("WebSocket disconnected");
+            setIsConnected(false);
+            // Attempt to reconnect after 5 seconds
+            setTimeout(() => setSocket(new WebSocket("wss://your-backend-url/ws")), 5000);
+        };
 
-    ws.onclose = () => {
-      console.log("WebSocket Disconnected");
-      setIsConnected(false);
-    };
+        setSocket(ws);
 
-    setSocket(ws);
+        return () => {
+            ws.close();
+        };
+    }, []);
 
-    return () => {
-      ws.close();
-    };
-  }, []);
-
-  return (
-    <WebSocketContext.Provider value={{ socket, isConnected }}>
-      {children}
-    </WebSocketContext.Provider>
-  );
+    return (
+        <WebSocketContext.Provider value={{ socket, isConnected }}>
+            {children}
+        </WebSocketContext.Provider>
+    );
 };
 
 export const useWebSocket = () => {
-  return useContext(WebSocketContext);
+    return useContext(WebSocketContext);
 };
