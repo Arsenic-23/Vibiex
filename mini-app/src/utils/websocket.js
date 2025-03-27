@@ -1,43 +1,46 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || "ws://localhost:5000";
-
 const WebSocketContext = createContext(null);
 
 export const WebSocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const ws = new WebSocket(WEBSOCKET_URL);
+    const ws = new WebSocket("wss://your-websocket-url.com"); // ✅ Replace with actual WebSocket URL
 
-    ws.onopen = () => console.log("WebSocket connected");
+    ws.onopen = () => {
+      console.log("WebSocket Connected");
+      setIsConnected(true);
+    };
+
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setMessages((prev) => [...prev, data]);
+      console.log("WebSocket Message:", event.data);
     };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket Error:", error);
+    };
+
     ws.onclose = () => {
-      console.log("WebSocket disconnected, attempting to reconnect...");
-      setTimeout(() => setSocket(new WebSocket(WEBSOCKET_URL)), 3000);
+      console.log("WebSocket Disconnected");
+      setIsConnected(false);
     };
-    ws.onerror = (error) => console.error("WebSocket Error:", error);
 
     setSocket(ws);
 
-    return () => ws.close();
+    return () => {
+      ws.close();
+    };
   }, []);
 
-  const sendMessage = (message) => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify(message));
-    }
-  };
-
   return (
-    <WebSocketContext.Provider value={{ socket, messages, sendMessage }}>
+    <WebSocketContext.Provider value={{ socket, isConnected }}>
       {children}
     </WebSocketContext.Provider>
   );
 };
 
-export const useWebSocket = () => useContext(WebSocketContext);
+export const useWebSocket = () => {
+  return useContext(WebSocketContext);
+};
